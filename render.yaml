@@ -1,12 +1,10 @@
-services:
-  # Base de données PostgreSQL
-  - type: psql
-    name: teranga-db
+databases:
+  - name: teranga-db
     plan: free
     databaseName: teranga_db
     user: teranga_user
 
-  # Application Web (Docker)
+services:
   - type: web
     name: teranga-app
     env: docker
