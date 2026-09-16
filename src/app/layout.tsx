@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic';
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -8,9 +8,18 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#000000",
+};
+
 export const metadata: Metadata = {
   title: "Teranga Alliance",
   description: "Plateforme de gestion pour associations et tontines.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Teranga Alliance",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
