@@ -14,6 +14,18 @@ services:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: teranga_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@teranga.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    restart: unless-stopped
+
   app:
     build: .
     container_name: teranga_app
