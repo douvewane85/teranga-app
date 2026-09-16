@@ -15,3 +15,7 @@ services:
         fromDatabase:
           name: teranga-db
           property: connectionString
+      - key: NEXTAUTH_URL
+        value: https://teranga-app.onrender.com
+      - key: NEXTAUTH_SECRET
+        value: teranga-super-secret-key-2026-xyz
