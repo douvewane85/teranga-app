@@ -1,0 +1,19 @@
+services:
+  # Base de données PostgreSQL
+  - type: psql
+    name: teranga-db
+    plan: free
+    databaseName: teranga_db
+    user: teranga_user
+
+  # Application Web (Docker)
+  - type: web
+    name: teranga-app
+    env: docker
+    plan: free
+    branch: develop
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: teranga-db
+          property: connectionString
