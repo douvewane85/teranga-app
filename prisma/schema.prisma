@@ -5,11 +5,120 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String
+  name          String?
+  phone         String?
+  birthDate     DateTime?
+  profession    String?
+  idCardNumber  String?
+  role          Role           @default(MEMBER)
+  status        String         @default("ACTIVE")
+  mustChangePassword Boolean   @default(true)
+  defaultCampaignId String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  obligations   Obligation[]
+  recordedPayments Payment[]   @relation("UserRecordedPayments")
+}
+
+enum PaymentFrequency {
+  MONTHLY
+  QUARTERLY
+  SEMI_ANNUALLY
+  ANNUALLY
+}
+
+model Campaign {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  frequency   PaymentFrequency
+  dueRule     String
+  goalAmount  Float?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  tiers       CampaignTier[]
+  obligations Obligation[]
+}
+
+model CampaignTier {
+  id         String   @id @default(cuid())
+  name       String
+  amount     Float
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+}
+
+enum ObligationStatus {
+  PENDING
+  PAID
+  OVERDUE
+}
+
+model Obligation {
+  id              String            @id @default(cuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaignId      String
+  campaign        Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  status          ObligationStatus  @default(PENDING)
+  targetAmount    Float?
+  amountPaid      Float?
+  customFrequency PaymentFrequency?
+  customDueRule   String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  payments        Payment[]
+  
+  @@unique([userId, campaignId])
+}
+
+enum PaymentMethod {
+  WAVE
+  ORANGE_MONEY
+  STRIPE
+  CASH
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  REJECTED
+}
+
+model Payment {
+  id              String         @id @default(cuid())
+  obligationId    String
+  obligation      Obligation     @relation(fields: [obligationId], references: [id], onDelete: Cascade)
+  amount          Float
+  method          PaymentMethod
+  reference       String?
+  period          String?
+  status          PaymentStatus  @default(PENDING)
+  proofUrl        String?
+  rejectionReason String?
+  validatedAt     DateTime?
+  recordedById    String?
+  recordedBy      User?          @relation("UserRecordedPayments", fields: [recordedById], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }

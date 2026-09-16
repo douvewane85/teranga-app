@@ -14,17 +14,19 @@ services:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
-  # Uncomment to run the app in docker too
-  # app:
-  #   build: .
-  #   container_name: teranga_app
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     DATABASE_URL: postgresql://teranga_user:teranga_password@db:5432/teranga_db?schema=public
-  #   depends_on:
-  #     - db
-  #   restart: unless-stopped
+  app:
+    build: .
+    container_name: teranga_app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://teranga_user:teranga_password@db:5432/teranga_db?schema=public
+    depends_on:
+      - db
+    volumes:
+      - uploads:/app/public/uploads
+    restart: unless-stopped
 
 volumes:
   pgdata:
+  uploads:
