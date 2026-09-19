@@ -12,6 +12,8 @@ type MemberData = {
   nbreMoisVerses: number;
   nbreMoisRetard: number;
   paidPeriods: string[];
+  totalSurplus?: number;
+  surplusDetails?: { period: string; amount: number; date: Date }[];
 };
 
 export default function Member360ReportModal({
@@ -31,6 +33,7 @@ export default function Member360ReportModal({
   campaignFrequency: string;
   campaignDueRule: string;
 }) {
+  const [showSurplusDetails, setShowSurplusDetails] = React.useState(false);
   if (!isOpen) return null;
 
   const periods = generatePeriods(campaignStartDate, campaignFrequency);
@@ -82,7 +85,7 @@ export default function Member360ReportModal({
         {/* Content */}
         <div className="p-6 overflow-y-auto flex-1 bg-gray-50/50">
           {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center">
               <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mr-4">
                 <svg className="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -118,7 +121,51 @@ export default function Member360ReportModal({
                 <p className="text-xl font-bold text-danger">{member.totalRetard > 0 ? member.totalRetard.toLocaleString('fr-FR') : "0"} CFA</p>
               </div>
             </div>
+
+            <div 
+              className={`bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center cursor-pointer transition-colors ${showSurplusDetails ? 'ring-2 ring-primary' : 'hover:bg-gray-50'}`}
+              onClick={() => setShowSurplusDetails(!showSurplusDetails)}
+            >
+              <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mr-4">
+                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Excédent</p>
+                <p className="text-xl font-bold text-primary">{(member.totalSurplus || 0).toLocaleString('fr-FR')} CFA</p>
+                <p className="text-[10px] text-gray-400 mt-1">Cliquer pour détails</p>
+              </div>
+            </div>
           </div>
+
+          {showSurplusDetails && (
+            <div className="bg-white rounded-xl shadow-sm border border-primary/20 overflow-hidden mb-8 animate-in fade-in slide-in-from-top-2">
+              <div className="px-5 py-3 border-b border-gray-100 bg-primary/5 flex justify-between items-center">
+                <h3 className="text-sm font-semibold text-primary">Détails des excédents (Surplus)</h3>
+                <button onClick={() => setShowSurplusDetails(false)} className="text-gray-400 hover:text-gray-600">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+              <div className="p-4">
+                {!member.surplusDetails || member.surplusDetails.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-2">Aucun excédent enregistré pour ce membre.</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {member.surplusDetails.map((detail, idx) => (
+                      <li key={idx} className="flex justify-between items-center text-sm bg-gray-50 p-3 rounded-lg">
+                        <div>
+                          <span className="font-medium text-gray-900">{detail.period}</span>
+                          <span className="text-gray-500 ml-2">le {new Date(detail.date).toLocaleDateString('fr-FR')}</span>
+                        </div>
+                        <span className="font-bold text-success">+{detail.amount.toLocaleString('fr-FR')} CFA</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Timeline / List of Periods */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">

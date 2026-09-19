@@ -16,7 +16,7 @@ export default function AdminLayout({
   const navigation = [
     { name: "Dashboard", href: "/admin/dashboard", icon: "📊" },
     { name: "Membres", href: "/admin/members", icon: "👥" },
-    { name: "Cotisations", href: "/admin/finances/campaigns", icon: "💰" },
+    { name: "Campagnes", href: "/admin/finances/campaigns", icon: "💰" },
     { name: "Notifications", href: "/admin/communications/alerts", icon: "🔔" },
     { name: "Communications", href: "/admin/communications", icon: "📢" },
     { name: "Événements", href: "/admin/events", icon: "📅" },
@@ -93,7 +93,7 @@ export default function AdminLayout({
                 <div className="space-y-1">
                   <Link onClick={() => setIsMobileMenuOpen(false)} href="/admin/finances/campaigns" className={`${pathname.startsWith("/admin/finances/campaigns") ? "bg-white/10 text-white font-semibold" : "text-[#A3C5B5] hover:bg-white/5 hover:text-white font-normal"} group flex items-center px-3 py-2.5 text-sm rounded-lg transition-all duration-200`}>
                     <svg className={`mr-3 h-5 w-5 ${pathname.startsWith("/admin/finances/campaigns") ? "text-white" : "text-[#8baf9f] group-hover:text-white"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    Cotisations
+                    Campagnes
                   </Link>
                 </div>
               </div>

@@ -9,6 +9,7 @@ import MembersTableWithPaymentModal from "@/components/MembersTableWithPaymentMo
 import ProofImageModal from "@/components/ProofImageModal";
 import MemberSearch360Tab from "@/components/MemberSearch360Tab";
 import CampaignCharts from "@/components/CampaignCharts";
+import CampaignSurplusCard from "@/components/CampaignSurplusCard";
 import { setUserDefaultCampaign } from "@/app/actions/preferences";
 
 export default async function CampaignReportPage(props: { params: Promise<{ id: string }> }) {
@@ -127,13 +128,10 @@ export default async function CampaignReportPage(props: { params: Promise<{ id: 
                 <p className="mt-2 text-sm text-gray-500">Montant total des impayés</p>
               </div>
 
-              <div className="overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-100 px-4 py-5 sm:p-6">
-                <dt className="truncate text-sm font-medium text-gray-500">Taux de recouvrement</dt>
-                <dd className="mt-1 text-3xl font-semibold tracking-tight text-primary">
-                  {finances.recoveryRate.toFixed(1)}%
-                </dd>
-                <p className="mt-2 text-sm text-gray-500">Sur l'objectif attendu</p>
-              </div>
+              <CampaignSurplusCard 
+                globalTotalSurplus={finances.globalTotalSurplus} 
+                members={allMembersData} 
+              />
             </div>
 
             {/* Graphiques UX Strategy */}

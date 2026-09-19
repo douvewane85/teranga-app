@@ -139,11 +139,39 @@ export async function getCampaignReport(campaignId: string) {
   });
 
   // Liste de TOUS les membres de la campagne
+  let globalTotalSurplus = 0;
+
   const allMembersData = enrolledObligations.map((obl) => {
     const target = obl.targetAmount || campaign.goalAmount || 0;
-    const actualPaid = obl.payments
-      .filter((p) => p.status === "COMPLETED")
-      .reduce((sum, p) => sum + p.amount, 0);
+    const completedPayments = obl.payments.filter((p) => p.status === "COMPLETED");
+    const actualPaid = completedPayments.reduce((sum, p) => sum + p.amount, 0);
+    
+    // Calcul des excédents (surplus) par période
+    const surplusDetails: { period: string; amount: number; date: Date }[] = [];
+    let memberTotalSurplus = 0;
+
+    const paymentsByPeriod: Record<string, typeof completedPayments> = {};
+    completedPayments.forEach(p => {
+      const periodName = p.period || "Unique";
+      if (!paymentsByPeriod[periodName]) paymentsByPeriod[periodName] = [];
+      paymentsByPeriod[periodName].push(p);
+    });
+
+    for (const [periodName, payments] of Object.entries(paymentsByPeriod)) {
+      const sumForPeriod = payments.reduce((sum, p) => sum + p.amount, 0);
+      if (sumForPeriod > target) {
+        const surplus = sumForPeriod - target;
+        memberTotalSurplus += surplus;
+        const latestPaymentDate = new Date(Math.max(...payments.map(p => new Date(p.createdAt).getTime())));
+        surplusDetails.push({
+          period: periodName,
+          amount: surplus,
+          date: latestPaymentDate
+        });
+      }
+    }
+
+    globalTotalSurplus += memberTotalSurplus;
     
     const nbreMoisVerses = target > 0 ? Math.floor(actualPaid / target) : 0;
     
@@ -169,6 +197,8 @@ export async function getCampaignReport(campaignId: string) {
       paidPeriods,
       payments: obl.payments,
       createdAt: obl.createdAt,
+      totalSurplus: memberTotalSurplus,
+      surplusDetails,
     };
   });
 
@@ -188,6 +218,7 @@ export async function getCampaignReport(campaignId: string) {
       partialCount,
       unpaidCount,
       recoveryRate,
+      globalTotalSurplus,
     },
     currentPeriodStats: {
       name: currentPeriod.name,
