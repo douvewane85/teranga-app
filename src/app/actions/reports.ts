@@ -202,6 +202,64 @@ export async function getCampaignReport(campaignId: string) {
     };
   });
 
+  // 6. Statistiques par période pour la table des versements mensuels
+  const periodsStats = periods.map((p, idx) => {
+    const isPastOrCurrent = idx < elapsedPeriodsCount;
+    
+    let targetAmount = 0;
+    let paidAmount = 0;
+    let paidCount = 0;
+    let lateCount = 0;
+    
+    const membersDetails: any[] = [];
+    
+    allMembersData.forEach((member) => {
+      const target = member.targetAmount;
+      targetAmount += target;
+      
+      const memberPaymentsForPeriod = member.payments.filter(
+        (pay) => pay.status === "COMPLETED" && (pay.period === p.name || (!pay.period && p.name === "Unique"))
+      );
+      const memberPaidPeriod = memberPaymentsForPeriod.reduce((s, pay) => s + pay.amount, 0);
+      
+      paidAmount += memberPaidPeriod;
+      
+      let surplus = 0;
+      let remaining = target - memberPaidPeriod;
+      if (remaining < 0) {
+        surplus = -remaining;
+        remaining = 0;
+      }
+      
+      if (isPastOrCurrent) {
+        if (memberPaidPeriod >= target) {
+          paidCount++;
+        } else {
+          lateCount++;
+        }
+      }
+      
+      membersDetails.push({
+        name: member.user.name || member.user.email,
+        target,
+        paid: memberPaidPeriod,
+        remaining,
+        surplus,
+      });
+    });
+    
+    return {
+      period: p.name,
+      date: p.date,
+      targetAmount,
+      paidAmount,
+      remainingAmount: Math.max(0, targetAmount - paidAmount),
+      paidCount,
+      lateCount,
+      membersDetails,
+    };
+  });
+
   return {
     campaign,
     statistics: {
@@ -234,6 +292,7 @@ export async function getCampaignReport(campaignId: string) {
       rejectedAmount,
       all: allPayments,
     },
+    periodsStats,
     allMembersData,
   };
 }

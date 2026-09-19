@@ -8,8 +8,10 @@ import CampaignReportTabs from "@/components/CampaignReportTabs";
 import MembersTableWithPaymentModal from "@/components/MembersTableWithPaymentModal";
 import ProofImageModal from "@/components/ProofImageModal";
 import MemberSearch360Tab from "@/components/MemberSearch360Tab";
+import RecordPaymentModal from "@/components/RecordPaymentModal";
 import CampaignCharts from "@/components/CampaignCharts";
 import CampaignSurplusCard from "@/components/CampaignSurplusCard";
+import CampaignPeriodsTable from "@/components/CampaignPeriodsTable";
 import { setUserDefaultCampaign } from "@/app/actions/preferences";
 
 export default async function CampaignReportPage(props: { params: Promise<{ id: string }> }) {
@@ -133,6 +135,8 @@ export default async function CampaignReportPage(props: { params: Promise<{ id: 
                 members={allMembersData} 
               />
             </div>
+
+            <CampaignPeriodsTable periodsStats={report.periodsStats} campaignName={campaign.name} />
 
             {/* Graphiques UX Strategy */}
             <CampaignCharts payments={payments.all} members={allMembersData} />
