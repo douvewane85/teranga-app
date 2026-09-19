@@ -284,3 +284,55 @@ export async function getGlobalReport() {
     allCampaigns: allCampaigns.map(c => ({ id: c.id, name: c.name, status: c.endDate > new Date() ? 'En cours' : 'Terminée' }))
   };
 }
+
+export async function getGlobalMembersStatus() {
+  const allUsers = await prisma.user.findMany({
+    where: { role: "MEMBER", status: "ACTIVE" },
+    include: {
+      obligations: {
+        include: {
+          campaign: true,
+          payments: { where: { status: "COMPLETED" } }
+        }
+      }
+    }
+  });
+
+  let aJour = 0;
+  let enRetard = 0;
+  const today = new Date();
+
+  allUsers.forEach(u => {
+    let hasRetard = false;
+    for (const obl of u.obligations) {
+      const start = new Date(obl.campaign.startDate);
+      if (start > today) continue;
+      
+      const target = obl.targetAmount || obl.campaign.goalAmount || 0;
+      const actualPaid = obl.payments.reduce((sum, p) => sum + p.amount, 0);
+      
+      let elapsedPeriods = 1;
+      const frequency = obl.campaign.frequency || "MONTHLY";
+      const curr = new Date(start);
+      while (curr <= today && (frequency as string) !== "ONE_TIME") {
+        if (frequency === "MONTHLY") curr.setMonth(curr.getMonth() + 1);
+        else if (frequency === "QUARTERLY") curr.setMonth(curr.getMonth() + 3);
+        else if (frequency === "SEMI_ANNUALLY") curr.setMonth(curr.getMonth() + 6);
+        else if (frequency === "ANNUALLY") curr.setFullYear(curr.getFullYear() + 1);
+        else break;
+        if (curr <= today) elapsedPeriods++;
+      }
+      
+      const expectedTotal = target * elapsedPeriods;
+      if (actualPaid < expectedTotal) {
+        hasRetard = true;
+        break;
+      }
+    }
+
+    if (hasRetard) enRetard++;
+    else aJour++;
+  });
+
+  return { aJour, enRetard, total: allUsers.length };
+}

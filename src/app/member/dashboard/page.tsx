@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getMemberCampaigns, getMemberCampaignDetails } from "@/app/actions/member";
+import { getGlobalMembersStatus } from "@/app/actions/reports";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 
@@ -13,6 +14,7 @@ export default async function MemberDashboardPage() {
   }
 
   const obligations = await getMemberCampaigns(session.user.id);
+  const globalMembersStatus = await getGlobalMembersStatus();
   
   // Si aucune campagne, on affiche un message vide
   if (obligations.length === 0) {
@@ -67,7 +69,7 @@ export default async function MemberDashboardPage() {
       </div>
 
       {/* Résumé financier global */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
           <span className="text-sm font-medium text-gray-500 mb-1">Montant attendu (Global)</span>
           <span className="text-3xl font-bold text-gray-900">{totalExpected.toLocaleString('fr-FR')} CFA</span>
@@ -88,6 +90,15 @@ export default async function MemberDashboardPage() {
           <span className={`text-3xl font-bold ${totalLate > 0 ? 'text-danger' : 'text-gray-900'}`}>
             {totalLate.toLocaleString('fr-FR')} CFA
           </span>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+          <span className="text-sm font-medium text-gray-500 mb-1">Statut des Membres (Global)</span>
+          <span className="text-lg font-semibold text-gray-900 flex space-x-3 mt-1">
+            <span className="text-green-600">{globalMembersStatus.aJour} à jour</span>
+            <span className="text-red-600">{globalMembersStatus.enRetard} en retard</span>
+          </span>
+          <span className="text-xs text-gray-500 mt-2">Sur {globalMembersStatus.total} membres actifs de l'association</span>
         </div>
       </div>
 
