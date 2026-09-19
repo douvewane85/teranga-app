@@ -5,12 +5,24 @@ import { getMemberCampaigns, getMemberCampaignDetails } from "@/app/actions/memb
 import { getGlobalMembersStatus } from "@/app/actions/reports";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export default async function MemberDashboardPage() {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
     redirect("/login");
+  }
+
+  const userDetails = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { defaultCampaignId: true },
+  });
+
+  if (userDetails?.defaultCampaignId) {
+    redirect(`/member/campaigns/${userDetails.defaultCampaignId}`);
   }
 
   const obligations = await getMemberCampaigns(session.user.id);

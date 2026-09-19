@@ -74,42 +74,7 @@ export default function CampaignCharts({ payments, members }: CampaignChartsProp
     ];
   }, [members]);
 
-  // 3. Line Chart Data: Évolution du nombre d'adhésions
-  const lineChartData = useMemo(() => {
-    const dataByMonth: Record<string, number> = {};
-    
-    members.forEach(member => {
-      if (!member.createdAt) return;
-      const date = new Date(member.createdAt);
-      const monthYear = date.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
-      if (!dataByMonth[monthYear]) {
-        dataByMonth[monthYear] = 0;
-      }
-      dataByMonth[monthYear]++;
-    });
-
-    let cumulative = 0;
-    const sortedData = Object.keys(dataByMonth).map(key => {
-      const firstMember = members.find(m => {
-        if (!m.createdAt) return false;
-        const d = new Date(m.createdAt);
-        return d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }) === key;
-      });
-      return {
-        name: key,
-        count: dataByMonth[key],
-        date: firstMember ? new Date(firstMember.createdAt).getTime() : 0,
-      };
-    }).sort((a, b) => a.date - b.date).map(item => {
-      cumulative += item.count;
-      return {
-        name: item.name,
-        'Total Adhésions': cumulative,
-      };
-    });
-
-    return sortedData;
-  }, [members]);
+  // 3. (Supprimé) Line Chart Data: Évolution du nombre d'adhésions n'est plus calculé.
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 mt-8">
@@ -161,22 +126,21 @@ export default function CampaignCharts({ payments, members }: CampaignChartsProp
         </div>
       </div>
 
-      {/* Line Chart */}
+      {/* Liste des Versements Mensuels */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-[350px]">
-        <h3 className="text-sm font-medium text-gray-500 mb-4">Évolution des Adhésions</h3>
-        <div className="flex-1 min-h-0">
-          {lineChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} width={40} />
-                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                <Line type="monotone" dataKey="Total Adhésions" stroke="#6366F1" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
+        <h3 className="text-sm font-medium text-gray-500 mb-4">Liste des Versements Mensuels</h3>
+        <div className="flex-1 overflow-y-auto min-h-0 pr-2">
+          {barChartData.length > 0 ? (
+            <ul className="space-y-3">
+              {[...barChartData].reverse().map((item, idx) => (
+                <li key={idx} className="flex justify-between items-center text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <span className="font-medium text-gray-900 capitalize">{item.name}</span>
+                  <span className="font-bold text-success">+{item.total.toLocaleString('fr-FR')} CFA</span>
+                </li>
+              ))}
+            </ul>
           ) : (
-            <div className="h-full flex items-center justify-center text-sm text-gray-400">Aucune donnée</div>
+            <div className="h-full flex items-center justify-center text-sm text-gray-400">Aucun versement enregistré</div>
           )}
         </div>
       </div>
