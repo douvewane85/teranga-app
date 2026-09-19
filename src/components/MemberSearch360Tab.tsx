@@ -15,6 +15,7 @@ type MemberData = {
   paidPeriods: string[];
   payments: any[];
   totalSurplus?: number;
+  surplusDetails?: { period: string; amount: number; date: Date }[];
 };
 
 export default function MemberSearch360Tab({
@@ -26,6 +27,7 @@ export default function MemberSearch360Tab({
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMember, setSelectedMember] = useState<MemberData | null>(null);
+  const [showSurplusDetails, setShowSurplusDetails] = useState(false);
 
   // Filtrer les membres selon la recherche
   const filteredMembers = members.filter((member) => {
@@ -40,6 +42,7 @@ export default function MemberSearch360Tab({
   const handleSelectMember = (member: MemberData) => {
     setSelectedMember(member);
     setSearchQuery("");
+    setShowSurplusDetails(false);
   };
 
   // Construire l'objet statistics et obligation attendu par MemberDashboardClient
@@ -105,11 +108,43 @@ export default function MemberSearch360Tab({
             )}
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+          <div 
+            className={`bg-white p-6 rounded-xl shadow-sm border flex flex-col cursor-pointer transition-colors ${showSurplusDetails ? 'border-primary ring-1 ring-primary' : 'border-gray-100 hover:bg-gray-50'}`}
+            onClick={() => setShowSurplusDetails(!showSurplusDetails)}
+          >
             <span className="text-sm font-medium text-gray-500 mb-1">Total Excédent (Surplus)</span>
             <span className="text-3xl font-bold text-primary">{(selectedMember.totalSurplus || 0).toLocaleString('fr-FR')} CFA</span>
+            <span className="text-xs text-gray-400 mt-2">Cliquer pour voir les détails</span>
           </div>
         </div>
+
+        {showSurplusDetails && (
+          <div className="bg-white rounded-xl shadow-sm border border-primary/20 overflow-hidden mb-8 animate-in fade-in slide-in-from-top-2">
+            <div className="px-5 py-3 border-b border-gray-100 bg-primary/5 flex justify-between items-center">
+              <h3 className="text-sm font-semibold text-primary">Détails des excédents (Surplus)</h3>
+              <button onClick={() => setShowSurplusDetails(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="p-4">
+              {!selectedMember.surplusDetails || selectedMember.surplusDetails.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-2">Aucun excédent enregistré pour ce membre.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {selectedMember.surplusDetails.map((detail: any, idx: number) => (
+                    <li key={idx} className="flex justify-between items-center text-sm bg-gray-50 p-3 rounded-lg">
+                      <div>
+                        <span className="font-medium text-gray-900">{detail.period}</span>
+                        <span className="text-gray-500 ml-2">le {new Date(detail.date).toLocaleDateString('fr-FR')}</span>
+                      </div>
+                      <span className="font-bold text-success">+{detail.amount.toLocaleString('fr-FR')} CFA</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
 
         <MemberDashboardClient
           obligation={obligation}
