@@ -2,7 +2,7 @@
 
 import React from "react";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 type MemberDetail = {
   name: string;
@@ -15,6 +15,7 @@ type MemberDetail = {
 type PeriodStat = {
   period: string;
   date: Date;
+  isPastOrCurrent: boolean;
   targetAmount: number;
   paidAmount: number;
   remainingAmount: number;
@@ -62,8 +63,7 @@ export default function CampaignPeriodsTable({
       tableRows.push(rowData);
     });
 
-    // @ts-ignore
-    doc.autoTable({
+    autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
       startY: 60,
@@ -93,14 +93,14 @@ export default function CampaignPeriodsTable({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-100">
-            {periodsStats.length === 0 ? (
+            {periodsStats.filter((p) => p.isPastOrCurrent).length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-8 text-center text-gray-500 text-sm">
                   Aucune période disponible.
                 </td>
               </tr>
             ) : (
-              periodsStats.map((stat, idx) => (
+              periodsStats.filter((p) => p.isPastOrCurrent).map((stat, idx) => (
                 <tr key={idx} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 capitalize">

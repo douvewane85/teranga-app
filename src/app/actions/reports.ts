@@ -251,6 +251,7 @@ export async function getCampaignReport(campaignId: string) {
     return {
       period: p.name,
       date: p.date,
+      isPastOrCurrent,
       targetAmount,
       paidAmount,
       remainingAmount: Math.max(0, targetAmount - paidAmount),
