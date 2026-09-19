@@ -30,21 +30,23 @@ export default function CampaignSurplusCard({
   return (
     <>
       <div 
-        className="overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-100 px-4 py-5 sm:p-6 cursor-pointer hover:bg-gray-50 transition-colors group relative"
+        className="overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 shadow-sm border border-indigo-100 px-4 py-5 sm:p-6 cursor-pointer hover:shadow-md hover:border-indigo-200 transition-all group relative"
         onClick={() => setIsOpen(true)}
       >
-        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-          <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        <div className="absolute top-4 right-4 text-indigo-400 group-hover:text-indigo-600 transition-colors">
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
           </svg>
         </div>
-        <dt className="truncate text-sm font-medium text-gray-500">Total excédents (Surplus)</dt>
-        <dd className="mt-1 text-3xl font-semibold tracking-tight text-primary">
-          {globalTotalSurplus.toLocaleString('fr-FR')} CFA
+        <dt className="truncate text-sm font-semibold text-indigo-800/70 uppercase tracking-wider">Total excédents (Surplus)</dt>
+        <dd className="mt-2 text-4xl font-extrabold tracking-tight text-indigo-600">
+          {globalTotalSurplus.toLocaleString('fr-FR')} <span className="text-xl font-semibold">CFA</span>
         </dd>
-        <p className="mt-2 text-sm text-gray-500 group-hover:text-primary transition-colors">
+        <p className="mt-3 text-sm font-medium text-indigo-500 group-hover:text-indigo-700 flex items-center transition-colors">
           Voir les détails
+          <svg className="ml-1.5 w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
         </p>
       </div>
 

@@ -49,24 +49,29 @@ export default function CampaignPeriodsTable({
     doc.text(`Restant : ${period.remainingAmount.toLocaleString("fr-FR")} CFA`, 14, 52);
     
     // Tableau des adhérents
-    const tableColumn = ["Adhérent", "Attendu (CFA)", "Versé (CFA)", "Restant (CFA)", "Surplus (CFA)"];
+    const tableColumn = ["Adhérent", "Attendu (CFA)", "Versé (CFA)", "Surplus (CFA)"];
     const tableRows: any[] = [];
+    
+    let periodTotalSurplus = 0;
 
     period.membersDetails.forEach((member) => {
+      periodTotalSurplus += member.surplus;
       const rowData = [
         member.name,
         member.target.toLocaleString("fr-FR"),
         member.paid.toLocaleString("fr-FR"),
-        member.remaining.toLocaleString("fr-FR"),
         member.surplus.toLocaleString("fr-FR")
       ];
       tableRows.push(rowData);
     });
 
+    // Ajouter le Total Surplus au résumé
+    doc.text(`Total Surplus : ${periodTotalSurplus.toLocaleString("fr-FR")} CFA`, 14, 58);
+
     autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
-      startY: 60,
+      startY: 65,
       styles: { fontSize: 9 },
       headStyles: { fillColor: [14, 165, 233] }, // primary color (sky-500)
     });
