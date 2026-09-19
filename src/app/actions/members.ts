@@ -121,3 +121,14 @@ export async function resetMemberPassword(formData: FormData) {
 
   revalidatePath("/admin/members");
 }
+
+export async function deleteMember(formData: FormData) {
+  const id = formData.get("id") as string;
+  if (!id) throw new Error("ID du membre manquant.");
+
+  await prisma.user.delete({
+    where: { id },
+  });
+
+  revalidatePath("/admin/members");
+}

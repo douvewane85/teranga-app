@@ -189,12 +189,12 @@ export default function RecordPaymentModal({
                     }
                     
                     let stateClasses = "border-gray-200 text-gray-700 bg-white hover:bg-gray-50";
-                    if (isPaid) {
-                      stateClasses = "border-green-200 bg-green-50 text-green-700 opacity-70 cursor-not-allowed";
-                    } else if (isSkipped) {
+                    if (isSkipped) {
                       stateClasses = "border-gray-200 bg-gray-100 text-gray-400 opacity-50 cursor-not-allowed";
                     } else if (isSelected) {
                       stateClasses = "border-primary bg-primary/10 text-primary ring-2 ring-primary ring-opacity-50";
+                    } else if (isPaid) {
+                      stateClasses = "border-green-200 bg-green-50 text-green-700 hover:bg-green-100";
                     } else if (isLate) {
                       stateClasses = "border-red-200 bg-white text-red-700 hover:bg-red-50";
                     }
@@ -203,10 +203,10 @@ export default function RecordPaymentModal({
                       <button
                         key={p.name}
                         type="button"
-                        disabled={isPaid || isSkipped}
+                        disabled={isSkipped}
                         onClick={() => setSelectedPeriod(p.name)}
                         className={`relative flex items-center justify-center p-3 text-sm font-medium border rounded-lg shadow-sm focus:outline-none transition-colors ${stateClasses}`}
-                        title={isSkipped ? "Vous devez payer les mois précédents d'abord" : ""}
+                        title={isSkipped ? "Vous devez payer les mois précédents d'abord" : (isPaid ? "Ajouter un excédent/don pour cette période" : "")}
                       >
                         {p.name}
                         {isPaid && (

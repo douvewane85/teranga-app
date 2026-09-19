@@ -2,8 +2,9 @@ import { PrismaClient } from "@prisma/client";
 import { Badge } from "@/components/ui/Badge";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { resetMemberPassword } from "@/app/actions/members";
+import { resetMemberPassword, deleteMember } from "@/app/actions/members";
 import ResetPasswordButton from "./ResetPasswordButton";
+import DeleteMemberButton from "./DeleteMemberButton";
 
 const prisma = new PrismaClient();
 
@@ -175,6 +176,11 @@ export default async function MembersPage(props: {
                     <form action={resetMemberPassword} className="inline ml-2">
                       <input type="hidden" name="id" value={member.id} />
                       <ResetPasswordButton />
+                    </form>
+
+                    <form action={deleteMember} className="inline ml-2">
+                      <input type="hidden" name="id" value={member.id} />
+                      <DeleteMemberButton />
                     </form>
                   </td>
                 </tr>

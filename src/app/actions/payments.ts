@@ -45,18 +45,8 @@ export async function recordManualPayment(formData: FormData) {
     const target = obligation.targetAmount || 0; // Note: on the modal side, target is per period. But amountPaid is total.
     // For this specific US, the user says "Une période déjà totalement payée ne doit pas pouvoir être enregistrée". 
     // And "Le montant payé ne doit pas dépasser le montant restant à payer pour la période".
-    // We will trust the client validation for period limits for now, but we check if we already have a payment for this period.
-
-    if (period) {
-      const existingPaymentsForPeriod = obligation.payments.filter(
-        p => p.period === period && p.status === "COMPLETED"
-      );
-      const totalPaidForPeriod = existingPaymentsForPeriod.reduce((sum, p) => sum + p.amount, 0);
-      
-      if (totalPaidForPeriod >= target) {
-         return { success: false, error: `La période ${period} est déjà totalement payée.` };
-      }
-    }
+    // WE HAVE CHANGED THIS: We now allow overpayments (surplus) for a period.
+    // The previous validation blocking payments if totalPaidForPeriod >= target has been removed.
 
     // 3. Upload de fichier local (si fourni)
     let proofUrl = null;
