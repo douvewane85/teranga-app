@@ -83,6 +83,7 @@ export async function updateCampaign(id: string, formData: FormData) {
   const tierNames = formData.getAll("tierName[]") as string[];
   const tierAmounts = formData.getAll("tierAmount[]") as string[];
   const tierIds = formData.getAll("tierId[]") as string[]; // Can be empty for new tiers
+  const forceSync = formData.get("forceSync") === "true";
 
   if (!name || !startDateStr || !endDateStr || !frequency || !dueRule) {
     throw new Error("Veuillez remplir tous les champs obligatoires (nom, dates, échéance)");
@@ -128,7 +129,12 @@ export async function updateCampaign(id: string, formData: FormData) {
       },
     });
 
-    if (oldCampaign && oldCampaign.goalAmount !== null && goalAmount !== null && oldCampaign.goalAmount !== goalAmount) {
+    if (forceSync && goalAmount !== null) {
+      await tx.obligation.updateMany({
+        where: { campaignId: id },
+        data: { targetAmount: goalAmount },
+      });
+    } else if (oldCampaign && oldCampaign.goalAmount !== null && goalAmount !== null && oldCampaign.goalAmount !== goalAmount) {
       await tx.obligation.updateMany({
         where: {
           campaignId: id,
@@ -160,7 +166,12 @@ export async function updateCampaign(id: string, formData: FormData) {
         });
 
         // Update obligations that had the old amount (so new payments adapt)
-        if (oldTier && oldTier.amount !== tier.amount) {
+        if (forceSync) {
+          await tx.obligation.updateMany({
+            where: { campaignId: id },
+            data: { targetAmount: tier.amount },
+          });
+        } else if (oldTier && oldTier.amount !== tier.amount) {
           await tx.obligation.updateMany({
             where: {
               campaignId: id,

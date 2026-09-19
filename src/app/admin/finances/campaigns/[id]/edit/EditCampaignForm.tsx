@@ -274,6 +274,22 @@ export default function EditCampaignForm({ campaign, initialTiers }: { campaign:
           </div>
         </div>
 
+        <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg flex items-start gap-3">
+          <input 
+            type="checkbox" 
+            id="forceSync" 
+            name="forceSync" 
+            value="true" 
+            className="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+          />
+          <label htmlFor="forceSync" className="text-sm text-orange-800">
+            <strong>Forcer la mise à jour de tous les membres</strong>
+            <p className="mt-1 text-xs text-orange-700">
+              Cochez cette case si vous souhaitez que tous les membres de cette campagne soient mis à jour avec le nouveau montant (très utile si le montant des membres est désynchronisé).
+            </p>
+          </label>
+        </div>
+
         <div className="flex items-center justify-end space-x-4 border-t border-gray-200 pt-6">
           <Link
             href={`/admin/finances/campaigns/${campaign.id}`}
