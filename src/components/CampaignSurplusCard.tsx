@@ -80,40 +80,31 @@ export default function CampaignSurplusCard({
                   <p className="text-gray-500">Aucun membre n'a enregistré de surplus (don) pour cette campagne.</p>
                 </div>
               ) : (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50 sticky top-0 shadow-sm">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membre</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mois / Période</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Montant Excédent</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-100">
-                    {membersWithSurplus.map((member) => (
-                      <React.Fragment key={member.id}>
-                        {member.surplusDetails.map((detail, index) => (
-                          <tr key={`${member.id}-${index}`} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {index === 0 ? (member.user.name || member.user.email) : ""}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                                {detail.period}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {new Date(detail.date).toLocaleDateString('fr-FR')}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-success text-right">
-                              +{detail.amount.toLocaleString('fr-FR')} CFA
-                            </td>
-                          </tr>
-                        ))}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                </table>
+                <div className="p-6 space-y-6">
+                  {membersWithSurplus.map((member) => (
+                    <div key={member.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                      <div className="px-5 py-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                        <h3 className="font-semibold text-gray-900">{member.user.name || member.user.email}</h3>
+                        <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                          Total: {member.totalSurplus.toLocaleString('fr-FR')} CFA
+                        </span>
+                      </div>
+                      <div className="p-4">
+                        <ul className="space-y-3">
+                          {member.surplusDetails.map((detail, index) => (
+                            <li key={`${member.id}-${index}`} className="flex justify-between items-center text-sm bg-gray-50 p-3 rounded-lg">
+                              <div>
+                                <span className="font-medium text-gray-900">{detail.period}</span>
+                                <span className="text-gray-500 ml-2">le {new Date(detail.date).toLocaleDateString('fr-FR')}</span>
+                              </div>
+                              <span className="font-bold text-success">+{detail.amount.toLocaleString('fr-FR')} CFA</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
             
