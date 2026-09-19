@@ -244,7 +244,6 @@ export default async function CampaignReportPage(props: { params: Promise<{ id: 
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membre</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mode</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Référence</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
                   </tr>
                 </thead>
@@ -263,9 +262,6 @@ export default async function CampaignReportPage(props: { params: Promise<{ id: 
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {payment.method}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {payment.reference || "-"}
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <Badge variant={payment.status === "COMPLETED" ? "success" : payment.status === "REJECTED" ? "danger" : "warning"}>
                           {payment.status}
@@ -274,7 +270,7 @@ export default async function CampaignReportPage(props: { params: Promise<{ id: 
                     </tr>
                   ))}
                   {payments.all.length === 0 && (
-                    <tr><td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">Aucun paiement enregistré pour le moment.</td></tr>
+                    <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">Aucun paiement enregistré pour le moment.</td></tr>
                   )}
                 </tbody>
               </table>

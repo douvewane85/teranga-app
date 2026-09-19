@@ -140,7 +140,6 @@ export async function declarePayment(formData: FormData) {
     const obligationId = formData.get("obligationId") as string;
     const amountStr = formData.get("amount") as string;
     const methodStr = formData.get("method") as string;
-    const reference = formData.get("reference") as string | null;
     const period = formData.get("period") as string | null;
     const file = formData.get("proof") as File | null;
     
@@ -149,8 +148,8 @@ export async function declarePayment(formData: FormData) {
       return { success: false, error: "Le paiement en espèces n'est pas autorisé pour les membres." };
     }
 
-    if (!obligationId || !amountStr || !methodStr || !reference) {
-      return { success: false, error: "Tous les champs obligatoires (incluant la référence) doivent être remplis." };
+    if (!obligationId || !amountStr || !methodStr) {
+      return { success: false, error: "Tous les champs obligatoires sont requis." };
     }
 
     const amount = parseFloat(amountStr);
@@ -191,7 +190,6 @@ export async function declarePayment(formData: FormData) {
         obligationId,
         amount,
         method,
-        reference,
         period,
         status: PaymentStatus.PENDING, 
         proofUrl,

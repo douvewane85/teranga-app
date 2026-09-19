@@ -12,7 +12,6 @@ export async function recordManualPayment(formData: FormData) {
     const obligationId = formData.get("obligationId") as string;
     const amountStr = formData.get("amount") as string;
     const methodStr = formData.get("method") as string;
-    const reference = formData.get("reference") as string | null;
     const period = formData.get("period") as string | null;
     const file = formData.get("proof") as File | null;
     
@@ -27,9 +26,7 @@ export async function recordManualPayment(formData: FormData) {
     }
 
     const method = methodStr as PaymentMethod;
-    if ((method === "WAVE" || method === "ORANGE_MONEY") && !reference) {
-      return { success: false, error: "La référence est obligatoire pour Wave et Orange Money." };
-    }
+    // Supprimé: la référence n'est plus obligatoire
 
     // 2. Vérification de l'obligation
     const obligation = await prisma.obligation.findUnique({
@@ -71,7 +68,6 @@ export async function recordManualPayment(formData: FormData) {
           obligationId,
           amount,
           method,
-          reference,
           period,
           status: PaymentStatus.COMPLETED, // Validé automatiquement car saisi par l'admin
           proofUrl,

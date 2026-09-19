@@ -251,17 +251,7 @@ export default function RecordPaymentModal({
             </div>
 
             {isDigital && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Référence du paiement *</label>
-                  <input 
-                    type="text" 
-                    name="reference" 
-                    required={isDigital}
-                    placeholder="ID de transaction Wave/OM"
-                    className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" 
-                  />
-                </div>
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Preuve (Capture) *</label>
                   <input 
