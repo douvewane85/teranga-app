@@ -113,6 +113,8 @@ export async function updateCampaign(id: string, formData: FormData) {
   });
 
   await prisma.$transaction(async (tx) => {
+    const oldCampaign = await tx.campaign.findUnique({ where: { id } });
+
     await tx.campaign.update({
       where: { id },
       data: {
@@ -126,6 +128,18 @@ export async function updateCampaign(id: string, formData: FormData) {
       },
     });
 
+    if (oldCampaign && oldCampaign.goalAmount !== null && goalAmount !== null && oldCampaign.goalAmount !== goalAmount) {
+      await tx.obligation.updateMany({
+        where: {
+          campaignId: id,
+          targetAmount: oldCampaign.goalAmount,
+        },
+        data: {
+          targetAmount: goalAmount,
+        },
+      });
+    }
+
     // Delete existing tiers that are not in the submitted list
     const validTierIds = tiersData.filter(t => t.id).map(t => t.id as string);
     await tx.campaignTier.deleteMany({
@@ -138,10 +152,25 @@ export async function updateCampaign(id: string, formData: FormData) {
     // Update or create tiers
     for (const tier of tiersData) {
       if (tier.id && tier.id.trim() !== "") {
+        const oldTier = await tx.campaignTier.findUnique({ where: { id: tier.id } });
+        
         await tx.campaignTier.update({
           where: { id: tier.id },
           data: { name: tier.name, amount: tier.amount },
         });
+
+        // Update obligations that had the old amount (so new payments adapt)
+        if (oldTier && oldTier.amount !== tier.amount) {
+          await tx.obligation.updateMany({
+            where: {
+              campaignId: id,
+              targetAmount: oldTier.amount,
+            },
+            data: {
+              targetAmount: tier.amount,
+            },
+          });
+        }
       } else {
         await tx.campaignTier.create({
           data: {

@@ -3,13 +3,13 @@
 import React, { useState } from "react";
 
 export default function MemberCampaignTabs({
-  overview,
   personal,
+  history,
 }: {
-  overview: React.ReactNode;
   personal: React.ReactNode;
+  history: React.ReactNode;
 }) {
-  const [activeTab, setActiveTab] = useState<"overview" | "personal">("personal");
+  const [activeTab, setActiveTab] = useState<"personal" | "history">("personal");
 
   return (
     <div className="space-y-6">
@@ -29,23 +29,23 @@ export default function MemberCampaignTabs({
           </button>
           
           <button
-            onClick={() => setActiveTab("overview")}
+            onClick={() => setActiveTab("history")}
             className={`
               whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium
-              ${activeTab === "overview"
+              ${activeTab === "history"
                 ? "border-primary text-primary"
                 : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
               }
             `}
           >
-            Vue d'ensemble
+            Historique & Versements
           </button>
         </nav>
       </div>
 
       <div className="mt-4">
         {activeTab === "personal" && personal}
-        {activeTab === "overview" && overview}
+        {activeTab === "history" && history}
       </div>
     </div>
   );

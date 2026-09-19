@@ -10,11 +10,13 @@ import { generatePeriods } from "@/lib/periods";
 export default function MemberDashboardClient({ 
   obligation, 
   campaign, 
-  statistics 
+  statistics,
+  view = "all"
 }: { 
   obligation: any, 
   campaign: any, 
-  statistics: any 
+  statistics: any,
+  view?: "all" | "personal" | "history"
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [initialSelectedPeriod, setInitialSelectedPeriod] = useState<string | undefined>(undefined);
@@ -40,7 +42,7 @@ export default function MemberDashboardClient({
 
   return (
     <>
-      {latePeriods.length > 0 && (
+      {(view === "all" || view === "personal") && latePeriods.length > 0 && (
         <div className="bg-red-50 shadow-sm rounded-2xl border border-red-200 mt-8">
           <div className="px-6 py-4 border-b border-red-200">
             <h3 className="text-lg font-medium leading-6 text-red-800 flex items-center">
@@ -74,9 +76,10 @@ export default function MemberDashboardClient({
         </div>
       )}
 
-      <div className="bg-white shadow-sm rounded-2xl border border-gray-100 mt-8">
-        <div className="px-6 py-5 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Historique de mes versements</h3>
+      {(view === "all" || view === "history") && (
+        <div className="bg-white shadow-sm rounded-2xl border border-gray-100 mt-8">
+          <div className="px-6 py-5 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">Historique de mes versements</h3>
           <button
             onClick={() => setIsModalOpen(true)}
             className="mt-4 md:mt-0 inline-flex items-center justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-hover"
@@ -139,6 +142,7 @@ export default function MemberDashboardClient({
           </table>
         </div>
       </div>
+      )}
 
       <RecordPaymentModal 
         isOpen={isModalOpen}
