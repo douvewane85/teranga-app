@@ -14,6 +14,7 @@ type MemberData = {
   status: string;
   paidPeriods: string[];
   payments: any[];
+  totalSurplus?: number;
 };
 
 export default function MemberSearch360Tab({
@@ -102,6 +103,11 @@ export default function MemberSearch360Tab({
             {statistics.totalRetard > 0 && (
               <span className="text-xs text-danger mt-2">{statistics.nbreMoisRetard} période(s) en retard</span>
             )}
+          </div>
+
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+            <span className="text-sm font-medium text-gray-500 mb-1">Total Excédent (Surplus)</span>
+            <span className="text-3xl font-bold text-primary">{(selectedMember.totalSurplus || 0).toLocaleString('fr-FR')} CFA</span>
           </div>
         </div>
 
