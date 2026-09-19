@@ -47,70 +47,69 @@ export default async function MemberCampaignDetailPage(props: { params: Promise<
           </div>
         </div>
 
-        <MemberCampaignTabs 
-          personal={
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <span className="mr-2">👤</span> Mon statut personnel
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-                    <span className="text-sm font-medium text-gray-500 mb-1">Statut des Membres</span>
-                    <div className="mt-1 text-xl font-semibold tracking-tight text-gray-900 flex flex-col space-y-1">
-                      <span className="text-green-600 text-sm">{allMembersData.filter(m => m.nbreMoisRetard === 0).length} à jour</span>
-                      <span className="text-red-600 text-sm">{allMembersData.filter(m => m.nbreMoisRetard > 0).length} en retard</span>
-                    </div>
-                  </div>
-                  <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-                    <span className="text-sm font-medium text-gray-500 mb-1">Montant attendu (Global)</span>
-                    <span className="text-3xl font-bold text-gray-900">{statistics.totalTargetAmount.toLocaleString('fr-FR')} CFA</span>
-                  </div>
-                  
-                  <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-                    <span className="text-sm font-medium text-gray-500 mb-1">Déjà versé</span>
-                    <span className="text-3xl font-bold text-success">{statistics.totalPaidAmount.toLocaleString('fr-FR')} CFA</span>
-                    <span className="text-xs text-gray-500 mt-2">{statistics.nbreMoisVerses} période(s) payée(s)</span>
-                  </div>
-
-                  <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-                    <span className="text-sm font-medium text-gray-500 mb-1">En attente de validation</span>
-                    <span className="text-3xl font-bold text-warning">{statistics.pendingAmount.toLocaleString('fr-FR')} CFA</span>
-                  </div>
-
-                  <div className={`bg-white p-6 rounded-xl shadow-sm border flex flex-col ${statistics.totalRetard > 0 ? 'border-red-200 bg-red-50' : 'border-gray-100'}`}>
-                    <span className="text-sm font-medium text-gray-500 mb-1">Retard actuel</span>
-                    <span className={`text-3xl font-bold ${statistics.totalRetard > 0 ? 'text-danger' : 'text-gray-900'}`}>
-                      {statistics.totalRetard.toLocaleString('fr-FR')} CFA
-                    </span>
-                    {statistics.totalRetard > 0 && (
-                      <span className="text-xs text-danger mt-2">{statistics.nbreMoisRetard} période(s) en retard</span>
-                    )}
-                  </div>
+        <div className="space-y-8 mt-8">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <span className="mr-2">👤</span> Mon statut personnel
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+                <span className="text-sm font-medium text-gray-500 mb-1">Statut des Membres</span>
+                <div className="mt-1 text-xl font-semibold tracking-tight text-gray-900 flex flex-col space-y-1">
+                  <span className="text-green-600 text-sm">{allMembersData.filter(m => m.nbreMoisRetard === 0).length} à jour</span>
+                  <span className="text-red-600 text-sm">{allMembersData.filter(m => m.nbreMoisRetard > 0).length} en retard</span>
                 </div>
               </div>
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+                <span className="text-sm font-medium text-gray-500 mb-1">Montant attendu (Global)</span>
+                <span className="text-3xl font-bold text-gray-900">{statistics.totalTargetAmount.toLocaleString('fr-FR')} CFA</span>
+              </div>
+              
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+                <span className="text-sm font-medium text-gray-500 mb-1">Déjà versé</span>
+                <span className="text-3xl font-bold text-success">{statistics.totalPaidAmount.toLocaleString('fr-FR')} CFA</span>
+                <span className="text-xs text-gray-500 mt-2">{statistics.nbreMoisVerses} période(s) payée(s)</span>
+              </div>
 
-              {/* Composant Client pour les retards et le modal de paiement */}
-              <MemberDashboardClient 
-                obligation={obligation}
-                campaign={campaign}
-                statistics={statistics}
-                view="personal"
-              />
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+                <span className="text-sm font-medium text-gray-500 mb-1">En attente de validation</span>
+                <span className="text-3xl font-bold text-warning">{statistics.pendingAmount.toLocaleString('fr-FR')} CFA</span>
+              </div>
+
+              <div className={`bg-white p-6 rounded-xl shadow-sm border flex flex-col ${statistics.totalRetard > 0 ? 'border-red-200 bg-red-50' : 'border-gray-100'}`}>
+                <span className="text-sm font-medium text-gray-500 mb-1">Retard actuel</span>
+                <span className={`text-3xl font-bold ${statistics.totalRetard > 0 ? 'text-danger' : 'text-gray-900'}`}>
+                  {statistics.totalRetard.toLocaleString('fr-FR')} CFA
+                </span>
+                {statistics.totalRetard > 0 && (
+                  <span className="text-xs text-danger mt-2">{statistics.nbreMoisRetard} période(s) en retard</span>
+                )}
+              </div>
             </div>
-          }
-          history={
-            <div className="space-y-8">
+          </div>
+
+          {/* Composant Client pour les retards */}
+          <MemberDashboardClient 
+            obligation={obligation}
+            campaign={campaign}
+            statistics={statistics}
+            view="personal"
+          />
+
+          <MemberCampaignTabs 
+            history={
               <MemberDashboardClient 
                 obligation={obligation}
                 campaign={campaign}
                 statistics={statistics}
                 view="history"
               />
+            }
+            globalPeriods={
               <CampaignPeriodsTable periodsStats={report.periodsStats} campaignName={campaign.name} />
-            </div>
-          }
-        />
+            }
+          />
+        </div>
       </div>
     );
   } catch (error: any) {
