@@ -9,6 +9,7 @@ import MemberDashboardClient from "./MemberDashboardClient";
 import CampaignCharts from "@/components/CampaignCharts";
 import MemberCampaignTabs from "@/components/MemberCampaignTabs";
 import CampaignPeriodsTable from "@/components/CampaignPeriodsTable";
+import MemberSurplusCard from "@/components/MemberSurplusCard";
 
 export default async function MemberCampaignDetailPage(props: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -52,7 +53,7 @@ export default async function MemberCampaignDetailPage(props: { params: Promise<
             <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <span className="mr-2">👤</span> Mon statut personnel
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
                 <span className="text-sm font-medium text-gray-500 mb-1">Statut des Membres</span>
                 <div className="mt-1 text-xl font-semibold tracking-tight text-gray-900 flex flex-col space-y-1">
@@ -61,7 +62,7 @@ export default async function MemberCampaignDetailPage(props: { params: Promise<
                 </div>
               </div>
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-                <span className="text-sm font-medium text-gray-500 mb-1">Montant attendu (Global)</span>
+                <span className="text-sm font-medium text-gray-500 mb-1">Mon Objectif Total</span>
                 <span className="text-3xl font-bold text-gray-900">{statistics.totalTargetAmount.toLocaleString('fr-FR')} CFA</span>
               </div>
               
@@ -85,6 +86,12 @@ export default async function MemberCampaignDetailPage(props: { params: Promise<
                   <span className="text-xs text-danger mt-2">{statistics.nbreMoisRetard} période(s) en retard</span>
                 )}
               </div>
+
+              {/* Nouveau composant pour le surplus */}
+              <MemberSurplusCard 
+                totalSurplus={statistics.totalSurplus} 
+                surplusDetails={statistics.surplusDetails} 
+              />
             </div>
           </div>
 

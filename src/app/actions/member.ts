@@ -92,6 +92,25 @@ export async function getMemberCampaignDetails(campaignId: string, userId: strin
     .filter((p) => p.status === "COMPLETED" && p.period)
     .map((p) => p.period as string);
 
+  // Calcul du surplus
+  const surplusDetails: { period: string, expected: number, paid: number, surplus: number }[] = [];
+  let totalSurplus = 0;
+  
+  const paymentsByPeriod: Record<string, number> = {};
+  obligation.payments
+    .filter((p) => p.status === "COMPLETED" && p.period)
+    .forEach((p) => {
+      paymentsByPeriod[p.period!] = (paymentsByPeriod[p.period!] || 0) + p.amount;
+    });
+
+  for (const [period, amountPaid] of Object.entries(paymentsByPeriod)) {
+    if (amountPaid > target) {
+      const surplus = amountPaid - target;
+      totalSurplus += surplus;
+      surplusDetails.push({ period, expected: target, paid: amountPaid, surplus });
+    }
+  }
+
   // --- STATISTIQUES GLOBALES DE LA CAMPAGNE ---
   const allObligations = await prisma.obligation.findMany({
     where: { campaignId },
@@ -129,6 +148,8 @@ export async function getMemberCampaignDetails(campaignId: string, userId: strin
       nbreMoisVerses,
       nbreMoisRetard,
       paidPeriods,
+      totalSurplus,
+      surplusDetails,
     },
     globalStats
   };
