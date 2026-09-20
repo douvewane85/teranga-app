@@ -61,6 +61,8 @@ export default function CampaignPeriodsTable({
 
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
+    // Helper pour éviter les espaces insécables buggés de jsPDF
+    const formatNum = (num: number) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
     
     let periodTotalSurplus = 0;
     const tableRows: any[] = [];
@@ -68,30 +70,63 @@ export default function CampaignPeriodsTable({
       periodTotalSurplus += member.surplus;
       tableRows.push([
         member.name,
-        member.target.toLocaleString("fr-FR"),
-        member.paid.toLocaleString("fr-FR"),
-        member.surplus > 0 ? `+${member.surplus.toLocaleString("fr-FR")}` : "0"
+        formatNum(member.target),
+        formatNum(member.paid),
+        member.surplus > 0 ? `+${formatNum(member.surplus)}` : "0"
       ]);
     });
 
-    // Boîtes de résumé textuel
-    doc.text(`Objectif de la période: ${period.targetAmount.toLocaleString("fr-FR")} CFA`, 14, 68);
-    doc.text(`Total versé: ${period.paidAmount.toLocaleString("fr-FR")} CFA`, 110, 68);
-    
-    doc.text(`Reste à recouvrer: ${period.remainingAmount.toLocaleString("fr-FR")} CFA`, 14, 76);
-    doc.text(`Surplus généré: ${periodTotalSurplus.toLocaleString("fr-FR")} CFA`, 110, 76);
+    // Dessin des 4 "cartes" de résumé (Objectif, Versé, Restant, Surplus)
+    const startY = 65;
+    const cardW = 42;
+    const cardH = 18;
+    const gap = 4.6;
+    const startX = 14;
+
+    const cards = [
+      { title: "Objectif (CFA)", value: formatNum(period.targetAmount), bg: [248, 250, 252], border: [226, 232, 240], text: [71, 85, 105], valColor: [15, 23, 42] },
+      { title: "Total Versé", value: formatNum(period.paidAmount), bg: [240, 253, 244], border: [187, 247, 208], text: [22, 101, 52], valColor: [21, 128, 61] },
+      { title: "Reste à recouvrer", value: formatNum(period.remainingAmount), bg: [255, 251, 235], border: [253, 230, 138], text: [146, 64, 14], valColor: [180, 83, 9] },
+      { title: "Surplus généré", value: formatNum(periodTotalSurplus), bg: [240, 249, 255], border: [186, 230, 253], text: [3, 105, 161], valColor: [2, 132, 199] }
+    ];
+
+    cards.forEach((card, index) => {
+      const x = startX + index * (cardW + gap);
+      
+      // Fond
+      doc.setFillColor(card.bg[0], card.bg[1], card.bg[2]);
+      doc.roundedRect(x, startY, cardW, cardH, 2, 2, 'F');
+      
+      // Bordure
+      doc.setDrawColor(card.border[0], card.border[1], card.border[2]);
+      doc.roundedRect(x, startY, cardW, cardH, 2, 2, 'D');
+
+      // Titre centré
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(card.text[0], card.text[1], card.text[2]);
+      doc.text(card.title, x + cardW / 2, startY + 6, { align: "center" });
+
+      // Valeur centrée
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(card.valColor[0], card.valColor[1], card.valColor[2]);
+      doc.text(card.value, x + cardW / 2, startY + 14, { align: "center" });
+    });
 
     // Titre de la table
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Détails par Adhérent", 14, 95);
-    doc.line(14, 98, 196, 98);
+    doc.setTextColor(50, 50, 50);
+    doc.text("Détails par Adhérent", 14, 98);
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, 101, 196, 101);
 
     // Tableau structuré
     autoTable(doc, {
       head: [["Adhérent", "Attendu (CFA)", "Versé (CFA)", "Surplus (CFA)"]],
       body: tableRows,
-      startY: 105,
+      startY: 106,
       theme: 'striped',
       styles: { fontSize: 10, cellPadding: 5 },
       headStyles: { fillColor: [14, 165, 233], textColor: 255, fontStyle: 'bold' },
