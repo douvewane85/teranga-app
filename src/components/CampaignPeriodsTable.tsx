@@ -35,45 +35,73 @@ export default function CampaignPeriodsTable({
   const generatePDF = (period: PeriodStat) => {
     const doc = new jsPDF();
     
-    // Titre
-    doc.setFontSize(18);
-    doc.text(`Rapport de Campagne - ${campaignName}`, 14, 22);
+    // En-tête principal avec fond de couleur
+    doc.setFillColor(14, 165, 233); // Couleur primaire
+    doc.rect(0, 0, 210, 40, 'F');
     
-    doc.setFontSize(12);
-    doc.text(`Période : ${period.period}`, 14, 30);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Rapport de Campagne`, 14, 20);
     
-    // Résumé
-    doc.setFontSize(10);
-    doc.text(`Montant attendu : ${period.targetAmount.toLocaleString("fr-FR")} CFA`, 14, 40);
-    doc.text(`Montant versé : ${period.paidAmount.toLocaleString("fr-FR")} CFA`, 14, 46);
-    doc.text(`Restant : ${period.remainingAmount.toLocaleString("fr-FR")} CFA`, 14, 52);
-    
-    // Tableau des adhérents
-    const tableColumn = ["Adhérent", "Attendu (CFA)", "Versé (CFA)", "Surplus (CFA)"];
-    const tableRows: any[] = [];
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${campaignName} - Période: ${period.period}`, 14, 30);
+
+    // Reset text color pour le corps du document
+    doc.setTextColor(50, 50, 50);
+
+    // Section Résumé Financier
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Résumé Financier", 14, 55);
+
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, 58, 196, 58);
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
     
     let periodTotalSurplus = 0;
-
+    const tableRows: any[] = [];
     period.membersDetails.forEach((member) => {
       periodTotalSurplus += member.surplus;
-      const rowData = [
+      tableRows.push([
         member.name,
         member.target.toLocaleString("fr-FR"),
         member.paid.toLocaleString("fr-FR"),
-        member.surplus.toLocaleString("fr-FR")
-      ];
-      tableRows.push(rowData);
+        member.surplus > 0 ? `+${member.surplus.toLocaleString("fr-FR")}` : "0"
+      ]);
     });
 
-    // Ajouter le Total Surplus au résumé
-    doc.text(`Total Surplus : ${periodTotalSurplus.toLocaleString("fr-FR")} CFA`, 14, 58);
+    // Boîtes de résumé textuel
+    doc.text(`Objectif de la période: ${period.targetAmount.toLocaleString("fr-FR")} CFA`, 14, 68);
+    doc.text(`Total versé: ${period.paidAmount.toLocaleString("fr-FR")} CFA`, 110, 68);
+    
+    doc.text(`Reste à recouvrer: ${period.remainingAmount.toLocaleString("fr-FR")} CFA`, 14, 76);
+    doc.text(`Surplus généré: ${periodTotalSurplus.toLocaleString("fr-FR")} CFA`, 110, 76);
 
+    // Titre de la table
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Détails par Adhérent", 14, 95);
+    doc.line(14, 98, 196, 98);
+
+    // Tableau structuré
     autoTable(doc, {
-      head: [tableColumn],
+      head: [["Adhérent", "Attendu (CFA)", "Versé (CFA)", "Surplus (CFA)"]],
       body: tableRows,
-      startY: 65,
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [14, 165, 233] }, // primary color (sky-500)
+      startY: 105,
+      theme: 'striped',
+      styles: { fontSize: 10, cellPadding: 5 },
+      headStyles: { fillColor: [14, 165, 233], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [245, 248, 250] },
+      columnStyles: {
+        0: { fontStyle: 'bold' },
+        1: { halign: 'right' },
+        2: { halign: 'right', textColor: [22, 163, 74] }, // Vert pour le versé
+        3: { halign: 'right', textColor: [14, 165, 233] }, // Bleu pour le surplus
+      }
     });
 
     doc.save(`Rapport_${campaignName}_${period.period}.pdf`);
