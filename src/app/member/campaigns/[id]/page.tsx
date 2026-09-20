@@ -9,7 +9,7 @@ import MemberDashboardClient from "./MemberDashboardClient";
 import CampaignCharts from "@/components/CampaignCharts";
 import MemberCampaignTabs from "@/components/MemberCampaignTabs";
 import CampaignPeriodsTable from "@/components/CampaignPeriodsTable";
-import MemberSurplusCard from "@/components/MemberSurplusCard";
+import MemberPersonalStatus from "@/components/MemberPersonalStatus";
 
 export default async function MemberCampaignDetailPage(props: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -49,78 +49,10 @@ export default async function MemberCampaignDetailPage(props: { params: Promise<
         </div>
 
         <div className="space-y-8 mt-8">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <span className="mr-2">👤</span> Mon statut personnel
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-                <span className="text-sm font-medium text-gray-500 mb-1">Statut des Membres</span>
-                <div className="mt-1 text-xl font-semibold tracking-tight text-gray-900 flex flex-col space-y-1">
-                  <span className="text-green-600 text-sm">{allMembersData.filter(m => m.nbreMoisRetard === 0).length} à jour</span>
-                  <span className="text-red-600 text-sm">{allMembersData.filter(m => m.nbreMoisRetard > 0).length} en retard</span>
-                </div>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-                <span className="text-sm font-medium text-gray-500 mb-1">Mon Objectif Total</span>
-                <span className="text-3xl font-bold text-gray-900">{statistics.totalTargetAmount.toLocaleString('fr-FR')} CFA</span>
-              </div>
-              
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-                <span className="text-sm font-medium text-gray-500 mb-1">Déjà versé</span>
-                <span className="text-3xl font-bold text-success">{statistics.totalPaidAmount.toLocaleString('fr-FR')} CFA</span>
-                <span className="text-xs text-gray-500 mt-2">{statistics.nbreMoisVerses} période(s) payée(s)</span>
-              </div>
-
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-                <span className="text-sm font-medium text-gray-500 mb-1">En attente de validation</span>
-                <span className="text-3xl font-bold text-warning">{statistics.pendingAmount.toLocaleString('fr-FR')} CFA</span>
-              </div>
-
-              <div className={`bg-white p-6 rounded-xl shadow-sm border flex flex-col ${statistics.totalRetard > 0 ? 'border-red-200 bg-red-50' : 'border-gray-100'}`}>
-                <span className="text-sm font-medium text-gray-500 mb-1">Retard actuel</span>
-                <span className={`text-3xl font-bold ${statistics.totalRetard > 0 ? 'text-danger' : 'text-gray-900'}`}>
-                  {statistics.totalRetard.toLocaleString('fr-FR')} CFA
-                </span>
-                {statistics.totalRetard > 0 && (
-                  <span className="text-xs text-danger mt-2">{statistics.nbreMoisRetard} période(s) en retard</span>
-                )}
-              </div>
-
-              {/* Nouveau composant pour le surplus */}
-              <MemberSurplusCard 
-                totalSurplus={statistics.totalSurplus} 
-              />
-            </div>
-          </div>
-
-          {/* Section détaillée des surplus si existant */}
-          {statistics.surplusDetails && statistics.surplusDetails.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-green-100 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                <span className="mr-2">📈</span> Détails de mes surplus
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {statistics.surplusDetails.map((detail, idx) => (
-                  <div key={idx} className="bg-green-50/50 rounded-lg p-4 border border-green-100 flex flex-col transition-colors hover:bg-green-50">
-                    <span className="font-medium text-gray-900 mb-2">{detail.period}</span>
-                    <div className="flex justify-between items-center text-sm mb-1">
-                      <span className="text-gray-500">Attendu :</span>
-                      <span className="font-medium text-gray-700">{detail.expected.toLocaleString('fr-FR')}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm mb-3">
-                      <span className="text-gray-500">Versé :</span>
-                      <span className="font-medium text-gray-700">{detail.paid.toLocaleString('fr-FR')}</span>
-                    </div>
-                    <div className="mt-auto pt-3 border-t border-green-200 flex justify-between items-center">
-                      <span className="text-xs font-semibold text-green-700 uppercase tracking-wider">Surplus</span>
-                      <span className="font-bold text-success text-base">+{detail.surplus.toLocaleString('fr-FR')}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <MemberPersonalStatus 
+            allMembersData={allMembersData} 
+            statistics={statistics} 
+          />
 
           {/* Composant Client pour les retards */}
           <MemberDashboardClient 
