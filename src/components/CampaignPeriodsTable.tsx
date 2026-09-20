@@ -122,15 +122,25 @@ export default function CampaignPeriodsTable({
     doc.setDrawColor(200, 200, 200);
     doc.line(14, 101, 196, 101);
 
-    // Tableau structuré
+    // Tableau structuré avec bordures
     autoTable(doc, {
       head: [["Adhérent", "Attendu (CFA)", "Versé (CFA)", "Surplus (CFA)"]],
       body: tableRows,
       startY: 106,
-      theme: 'striped',
-      styles: { fontSize: 10, cellPadding: 5 },
-      headStyles: { fillColor: [14, 165, 233], textColor: 255, fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [245, 248, 250] },
+      theme: 'grid',
+      styles: { 
+        fontSize: 10, 
+        cellPadding: 5,
+        lineColor: [226, 232, 240], // Bordure gris clair
+        lineWidth: 0.1
+      },
+      headStyles: { 
+        fillColor: [14, 165, 233], 
+        textColor: 255, 
+        fontStyle: 'bold',
+        lineColor: [14, 165, 233] 
+      },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
       columnStyles: {
         0: { fontStyle: 'bold' },
         1: { halign: 'right' },
