@@ -35,6 +35,8 @@ model User {
   updatedAt     DateTime       @updatedAt
   obligations   Obligation[]
   recordedPayments Payment[]   @relation("UserRecordedPayments")
+  sentCommunications     Communication[] @relation("SentCommunications")
+  receivedCommunications CommunicationTarget[] @relation("ReceivedCommunications")
 }
 
 enum PaymentFrequency {
@@ -121,4 +123,42 @@ model Payment {
   recordedBy      User?          @relation("UserRecordedPayments", fields: [recordedById], references: [id])
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+}
+
+model SystemSetting {
+  id              String   @id @default("global")
+  associationName String   @default("Teranga Alliance")
+  contactEmail    String?
+  contactPhone    String?
+  currency        String   @default("CFA")
+  logoUrl         String?
+  updatedAt       DateTime @updatedAt
+}
+
+enum CommunicationChannel {
+  IN_APP
+  EMAIL
+  WHATSAPP
+  SMS
+}
+
+model Communication {
+  id        String               @id @default(cuid())
+  subject   String?
+  content   String
+  channel   CommunicationChannel
+  senderId  String
+  sender    User                 @relation("SentCommunications", fields: [senderId], references: [id])
+  createdAt DateTime             @default(now())
+  targets   CommunicationTarget[]
+}
+
+model CommunicationTarget {
+  id               String        @id @default(cuid())
+  communicationId  String
+  communication    Communication @relation(fields: [communicationId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User          @relation("ReceivedCommunications", fields: [userId], references: [id], onDelete: Cascade)
+  status           String        @default("PENDING") // PENDING, SENT, FAILED, READ
+  readAt           DateTime?
 }
