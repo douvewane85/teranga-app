@@ -12,6 +12,7 @@ import RecordPaymentModal from "@/components/RecordPaymentModal";
 import CampaignSurplusCard from "@/components/CampaignSurplusCard";
 import CampaignPeriodsTable from "@/components/CampaignPeriodsTable";
 import { setUserDefaultCampaign } from "@/app/actions/preferences";
+import TransactionsClientTable from "@/components/TransactionsClientTable";
 
 export default async function CampaignReportPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -233,50 +234,10 @@ export default async function CampaignReportPage(props: { params: Promise<{ id: 
           />
         }
         transactions={
-          <div className="bg-white shadow-sm rounded-lg border border-gray-100">
-            <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">Historique détaillé des paiements</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membre</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mode</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {payments.all.map((payment) => (
-                    <tr key={payment.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(payment.createdAt).toLocaleDateString('fr-FR')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {payment.obligation.user.name || payment.obligation.user.email}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {payment.amount.toLocaleString('fr-FR')} CFA
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {payment.method}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <Badge variant={payment.status === "COMPLETED" ? "success" : payment.status === "REJECTED" ? "danger" : "warning"}>
-                          {payment.status}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                  {payments.all.length === 0 && (
-                    <tr><td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-500">Aucun paiement enregistré pour le moment.</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <TransactionsClientTable 
+            payments={payments.all} 
+            campaignPeriods={report.periodsStats.map(p => p.period)} 
+          />
         }
         memberSearch={
           <MemberSearch360Tab 

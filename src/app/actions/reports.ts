@@ -110,10 +110,35 @@ export async function getCampaignReport(campaignId: string) {
     orderBy: { createdAt: 'desc' }
   });
 
+  const ascPayments = [...allPayments].reverse();
+  const sumByObligationPeriod: Record<string, number> = {};
+  
+  const enrichedAllPayments = ascPayments.map(p => {
+    const key = `${p.obligationId}_${p.period || 'Unique'}`;
+    const previousSum = sumByObligationPeriod[key] || 0;
+    const target = p.obligation.targetAmount || campaign.goalAmount || 0;
+    
+    let paymentType = "Cotisation";
+    if (previousSum >= target) {
+      paymentType = "Surplus";
+    } else if (previousSum + p.amount > target) {
+      paymentType = "Cotisation + Surplus";
+    }
+
+    if (p.status === "COMPLETED") {
+      sumByObligationPeriod[key] = previousSum + p.amount;
+    }
+    
+    return {
+      ...p,
+      paymentType,
+    };
+  }).reverse();
+
   const paymentDistribution: Record<string, { count: number; total: number }> = {};
   let pendingCount = 0, pendingAmount = 0, rejectedCount = 0, rejectedAmount = 0;
 
-  allPayments.forEach((p) => {
+  enrichedAllPayments.forEach((p) => {
     if (p.status === "COMPLETED") {
       if (!paymentDistribution[p.method]) paymentDistribution[p.method] = { count: 0, total: 0 };
       paymentDistribution[p.method].count++;
@@ -287,7 +312,7 @@ export async function getCampaignReport(campaignId: string) {
       pendingAmount,
       rejectedCount,
       rejectedAmount,
-      all: allPayments,
+      all: enrichedAllPayments,
     },
     periodsStats,
     allMembersData,
