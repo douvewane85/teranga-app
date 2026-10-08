@@ -189,12 +189,12 @@ export default function RecordPaymentModal({
                     }
                     
                     let stateClasses = "border-gray-200 text-gray-700 bg-white hover:bg-gray-50";
-                    if (isSkipped) {
+                    if (isPaid) {
+                      stateClasses = "border-green-200 bg-green-50 text-green-700 opacity-50 cursor-not-allowed";
+                    } else if (isSkipped) {
                       stateClasses = "border-gray-200 bg-gray-100 text-gray-400 opacity-50 cursor-not-allowed";
                     } else if (isSelected) {
                       stateClasses = "border-primary bg-primary/10 text-primary ring-2 ring-primary ring-opacity-50";
-                    } else if (isPaid) {
-                      stateClasses = "border-green-200 bg-green-50 text-green-700 hover:bg-green-100";
                     } else if (isLate) {
                       stateClasses = "border-red-200 bg-white text-red-700 hover:bg-red-50";
                     }
@@ -203,10 +203,10 @@ export default function RecordPaymentModal({
                       <button
                         key={p.name}
                         type="button"
-                        disabled={isSkipped}
+                        disabled={isSkipped || isPaid}
                         onClick={() => setSelectedPeriod(p.name)}
                         className={`relative flex items-center justify-center p-3 text-sm font-medium border rounded-lg shadow-sm focus:outline-none transition-colors ${stateClasses}`}
-                        title={isSkipped ? "Vous devez payer les mois précédents d'abord" : (isPaid ? "Ajouter un excédent/don pour cette période" : "")}
+                        title={isPaid ? "Période déjà payée" : isSkipped ? "Vous devez payer les mois précédents d'abord" : ""}
                       >
                         {p.name}
                         {isPaid && (
@@ -231,7 +231,8 @@ export default function RecordPaymentModal({
                   defaultValue={member.targetAmount}
                   min={1}
                   required
-                  className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" 
+                  disabled={!selectedPeriod}
+                  className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:bg-gray-100" 
                 />
                 <p className="mt-1 text-xs text-gray-500">Montant attendu : {member.targetAmount.toLocaleString('fr-FR')} CFA</p>
               </div>
@@ -241,7 +242,8 @@ export default function RecordPaymentModal({
                   name="method" 
                   value={method} 
                   onChange={(e) => setMethod(e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  disabled={!selectedPeriod}
+                  className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50 disabled:bg-gray-100"
                 >
                   {!isMemberView && <option value="CASH">Espèces</option>}
                   <option value="WAVE">Wave</option>
@@ -258,8 +260,9 @@ export default function RecordPaymentModal({
                     type="file" 
                     name="proof" 
                     required={isDigital}
+                    disabled={!selectedPeriod}
                     accept="image/png, image/jpeg, application/pdf"
-                    className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-hover" 
+                    className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-hover disabled:opacity-50" 
                   />
                 </div>
               </div>
