@@ -49,11 +49,11 @@ export default async function MemberDashboardPage() {
     );
   }
 
-  // Calculer les statistiques globales
   let totalExpected = 0;
   let totalPaid = 0;
   let totalPending = 0;
   let totalLate = 0;
+  let totalSurplus = 0;
 
   // On va utiliser getMemberCampaignDetails pour chaque campagne pour avoir les retards précis
   for (const obl of obligations) {
@@ -63,6 +63,7 @@ export default async function MemberDashboardPage() {
       totalPaid += details.statistics.totalPaidAmount;
       totalPending += details.statistics.pendingAmount;
       totalLate += details.statistics.totalRetard;
+      totalSurplus += details.statistics.totalSurplus || 0;
     } catch (e) {
       console.error(e);
     }
@@ -81,7 +82,7 @@ export default async function MemberDashboardPage() {
       </div>
 
       {/* Résumé financier global */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
           <span className="text-sm font-medium text-gray-500 mb-1">Montant attendu (Global)</span>
           <span className="text-3xl font-bold text-gray-900">{totalExpected.toLocaleString('fr-FR')} CFA</span>
@@ -90,6 +91,11 @@ export default async function MemberDashboardPage() {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
           <span className="text-sm font-medium text-gray-500 mb-1">Total versé</span>
           <span className="text-3xl font-bold text-success">{totalPaid.toLocaleString('fr-FR')} CFA</span>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+          <span className="text-sm font-medium text-gray-500 mb-1">Surplus total</span>
+          <span className="text-3xl font-bold text-primary">{totalSurplus.toLocaleString('fr-FR')} CFA</span>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
@@ -105,12 +111,12 @@ export default async function MemberDashboardPage() {
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-          <span className="text-sm font-medium text-gray-500 mb-1">Statut des Membres (Global)</span>
+          <span className="text-sm font-medium text-gray-500 mb-1">Statut des Membres</span>
           <span className="text-lg font-semibold text-gray-900 flex space-x-3 mt-1">
             <span className="text-green-600">{globalMembersStatus.aJour} à jour</span>
             <span className="text-red-600">{globalMembersStatus.enRetard} en retard</span>
           </span>
-          <span className="text-xs text-gray-500 mt-2">Sur {globalMembersStatus.total} membres actifs de l'association</span>
+          <span className="text-xs text-gray-500 mt-2">Sur {globalMembersStatus.total} membres actifs</span>
         </div>
       </div>
 
