@@ -210,6 +210,7 @@ export async function getCampaignReport(campaignId: string) {
     
     let targetAmount = 0;
     let paidAmount = 0;
+    let surplusAmount = 0;
     let paidCount = 0;
     let lateCount = 0;
     
@@ -222,16 +223,18 @@ export async function getCampaignReport(campaignId: string) {
       const memberPaymentsForPeriod = member.payments.filter(
         (pay) => pay.status === "COMPLETED" && (pay.period === p.name || (!pay.period && p.name === "Unique"))
       );
-      const memberPaidPeriod = memberPaymentsForPeriod.reduce((s, pay) => s + pay.amount, 0);
-      
-      paidAmount += memberPaidPeriod;
+      let memberPaidPeriod = memberPaymentsForPeriod.reduce((s, pay) => s + pay.amount, 0);
       
       let surplus = 0;
       let remaining = target - memberPaidPeriod;
       if (remaining < 0) {
         surplus = -remaining;
         remaining = 0;
+        memberPaidPeriod = target;
       }
+      
+      paidAmount += memberPaidPeriod;
+      surplusAmount += surplus;
       
       if (isPastOrCurrent) {
         if (memberPaidPeriod >= target) {
@@ -256,6 +259,7 @@ export async function getCampaignReport(campaignId: string) {
       isPastOrCurrent,
       targetAmount,
       paidAmount,
+      surplusAmount,
       remainingAmount: Math.max(0, targetAmount - paidAmount),
       paidCount,
       lateCount,

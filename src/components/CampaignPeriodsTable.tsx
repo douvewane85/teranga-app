@@ -18,6 +18,7 @@ type PeriodStat = {
   isPastOrCurrent: boolean;
   targetAmount: number;
   paidAmount: number;
+  surplusAmount: number;
   remainingAmount: number;
   paidCount: number;
   lateCount: number;
@@ -164,6 +165,7 @@ export default function CampaignPeriodsTable({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mois / Période</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Montant Attendu</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Montant Versé</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Surplus</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Restant</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Membres à jour</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Membres en retard</th>
@@ -173,7 +175,7 @@ export default function CampaignPeriodsTable({
           <tbody className="bg-white divide-y divide-gray-100">
             {periodsStats.filter((p) => p.isPastOrCurrent).length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-500 text-sm">
+                <td colSpan={8} className="px-6 py-8 text-center text-gray-500 text-sm">
                   Aucune période disponible.
                 </td>
               </tr>
@@ -190,6 +192,9 @@ export default function CampaignPeriodsTable({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-success text-right">
                     {stat.paidAmount.toLocaleString("fr-FR")} CFA
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-indigo-600 text-right">
+                    {stat.surplusAmount > 0 ? `+${stat.surplusAmount.toLocaleString("fr-FR")} CFA` : <span className="text-gray-400">0 CFA</span>}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                     {stat.remainingAmount > 0 ? (
