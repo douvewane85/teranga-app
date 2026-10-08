@@ -14,6 +14,7 @@ type MemberData = {
   nbreMoisRetard: number;
   paidPeriods: string[];
   totalSurplus: number;
+  payments: any[];
 };
 
 import { generatePeriods } from "@/lib/periods";
@@ -25,6 +26,7 @@ export default function MembersTableWithPaymentModal({
   campaignFrequency,
   campaignDueRule,
   currentPeriodStats,
+  periodsStats = [],
 }: { 
   members: MemberData[];
   campaignName: string;
@@ -38,41 +40,58 @@ export default function MembersTableWithPaymentModal({
     surplusAmount?: number;
     recoveryRate: number;
   };
+  periodsStats?: any[];
 }) {
   const [selectedMember, setSelectedMember] = useState<MemberData | null>(null);
   const [initialSelectedPeriod, setInitialSelectedPeriod] = useState<string | undefined>(undefined);
   const [selected360Member, setSelected360Member] = useState<MemberData | null>(null);
   const [activeTab, setActiveTab] = useState<"cotisations" | "surplus">("cotisations");
+  const [activePeriodFilter, setActivePeriodFilter] = useState<string>(currentPeriodStats.name);
 
   const periods = generatePeriods(campaignStartDate, campaignFrequency);
   const today = new Date();
 
+  const displayedStats = periodsStats.find(p => p.period === activePeriodFilter) || {
+    targetAmount: currentPeriodStats.targetAmount,
+    paidAmount: currentPeriodStats.paidAmount,
+    surplusAmount: currentPeriodStats.surplusAmount,
+  };
+  const displayedRecoveryRate = displayedStats.targetAmount > 0 ? (displayedStats.paidAmount / displayedStats.targetAmount) * 100 : 0;
+
   return (
     <div className="space-y-6">
-      {/* Statistiques de la Période en Cours */}
+      {/* Statistiques de la Période Sélectionnée */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-primary/20 flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div>
-          <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Période en cours</h4>
-          <span className="text-2xl font-bold text-primary">{currentPeriodStats.name}</span>
+        <div className="min-w-[200px]">
+          <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Période</h4>
+          <select 
+            value={activePeriodFilter} 
+            onChange={(e) => setActivePeriodFilter(e.target.value)}
+            className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-primary focus:outline-none focus:ring-primary sm:text-lg text-primary font-bold bg-gray-50 cursor-pointer shadow-sm"
+          >
+            {periodsStats.map(p => (
+              <option key={p.period} value={p.period}>{p.period}</option>
+            ))}
+          </select>
         </div>
         <div className="mt-4 md:mt-0 flex flex-col md:flex-row gap-6 md:gap-12">
           <div>
             <p className="text-sm text-gray-500 mb-1">Montant attendu</p>
-            <p className="text-lg font-semibold text-gray-900">{currentPeriodStats.targetAmount.toLocaleString('fr-FR')} CFA</p>
+            <p className="text-lg font-semibold text-gray-900">{displayedStats.targetAmount.toLocaleString('fr-FR')} CFA</p>
           </div>
           <div>
             <p className="text-sm text-gray-500 mb-1">Montant perçu</p>
-            <p className="text-lg font-semibold text-success">{currentPeriodStats.paidAmount.toLocaleString('fr-FR')} CFA</p>
+            <p className="text-lg font-semibold text-success">{displayedStats.paidAmount.toLocaleString('fr-FR')} CFA</p>
           </div>
-          {currentPeriodStats.surplusAmount !== undefined && (
+          {displayedStats.surplusAmount !== undefined && displayedStats.surplusAmount > 0 && (
             <div>
               <p className="text-sm text-gray-500 mb-1">Montant Surplus</p>
-              <p className="text-lg font-semibold text-indigo-600">+{currentPeriodStats.surplusAmount.toLocaleString('fr-FR')} CFA</p>
+              <p className="text-lg font-semibold text-indigo-600">+{displayedStats.surplusAmount.toLocaleString('fr-FR')} CFA</p>
             </div>
           )}
           <div>
             <p className="text-sm text-gray-500 mb-1">Recouvrement</p>
-            <p className="text-lg font-semibold text-primary">{currentPeriodStats.recoveryRate.toFixed(1)}%</p>
+            <p className="text-lg font-semibold text-primary">{displayedRecoveryRate.toFixed(1)}%</p>
           </div>
         </div>
       </div>
@@ -113,6 +132,14 @@ export default function MembersTableWithPaymentModal({
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {members.map((member) => {
+                const memberPaymentsForPeriod = member.payments?.filter(
+                  (pay: any) => pay.status === "COMPLETED" && (pay.period === activePeriodFilter || (!pay.period && activePeriodFilter === "Unique"))
+                ) || [];
+                const memberPeriodPaidTotal = memberPaymentsForPeriod.reduce((s: number, pay: any) => s + pay.amount, 0);
+                
+                const memberPeriodCotisation = Math.min(memberPeriodPaidTotal, member.targetAmount);
+                const memberPeriodRetard = Math.max(0, member.targetAmount - memberPeriodPaidTotal);
+
                 const isPaid = (pName: string) => member.paidPeriods.includes(pName);
                 const memberLatePeriods = periods.filter(p => {
                   const paid = isPaid(p.name);
@@ -126,9 +153,9 @@ export default function MembersTableWithPaymentModal({
                 <tr key={member.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{member.user.name || member.user.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.targetAmount.toLocaleString('fr-FR')}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(member.amountPaid - (member.totalSurplus || 0)).toLocaleString('fr-FR')}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-danger">{member.totalRetard > 0 ? member.totalRetard.toLocaleString('fr-FR') : "-"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">{member.nbreMoisVerses}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{memberPeriodCotisation.toLocaleString('fr-FR')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-danger">{memberPeriodRetard > 0 ? memberPeriodRetard.toLocaleString('fr-FR') : "-"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">{memberPeriodCotisation > 0 ? "1" : "0"}</td>
                   <td className="px-6 py-4 text-sm text-gray-500 text-center">
                     <div className="flex flex-wrap gap-1 justify-center max-w-[200px] mx-auto">
                       {memberLatePeriods.length > 0 ? (
@@ -182,10 +209,19 @@ export default function MembersTableWithPaymentModal({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {members.filter(m => m.totalSurplus > 0).map((member) => (
+                {members.map((member) => {
+                  const memberPaymentsForPeriod = member.payments?.filter(
+                    (pay: any) => pay.status === "COMPLETED" && (pay.period === activePeriodFilter || (!pay.period && activePeriodFilter === "Unique"))
+                  ) || [];
+                  const memberPeriodPaidTotal = memberPaymentsForPeriod.reduce((s: number, pay: any) => s + pay.amount, 0);
+                  const memberPeriodSurplus = Math.max(0, memberPeriodPaidTotal - member.targetAmount);
+
+                  if (memberPeriodSurplus <= 0) return null;
+
+                  return (
                   <tr key={`surplus-${member.id}`} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{member.user.name || member.user.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-indigo-600">+{member.totalSurplus.toLocaleString('fr-FR')} CFA</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-indigo-600">+{memberPeriodSurplus.toLocaleString('fr-FR')} CFA</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <button 
                         onClick={() => setSelected360Member(member)}
@@ -196,9 +232,16 @@ export default function MembersTableWithPaymentModal({
                       </button>
                     </td>
                   </tr>
-                ))}
-                {members.filter(m => m.totalSurplus > 0).length === 0 && (
-                  <tr><td colSpan={3} className="px-6 py-8 text-center text-sm text-gray-500">Aucun surplus enregistré par les membres.</td></tr>
+                  );
+                })}
+                {members.filter(m => {
+                  const memberPaymentsForPeriod = m.payments?.filter(
+                    (pay: any) => pay.status === "COMPLETED" && (pay.period === activePeriodFilter || (!pay.period && activePeriodFilter === "Unique"))
+                  ) || [];
+                  const memberPeriodPaidTotal = memberPaymentsForPeriod.reduce((s: number, pay: any) => s + pay.amount, 0);
+                  return (memberPeriodPaidTotal - m.targetAmount) > 0;
+                }).length === 0 && (
+                  <tr><td colSpan={3} className="px-6 py-8 text-center text-sm text-gray-500">Aucun surplus enregistré pour la période {activePeriodFilter}.</td></tr>
                 )}
               </tbody>
             </table>

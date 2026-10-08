@@ -229,6 +229,7 @@ export default async function CampaignReportPage(props: { params: Promise<{ id: 
             campaignFrequency={campaign.frequency}
             campaignDueRule={campaign.dueRule}
             currentPeriodStats={currentPeriodStats}
+            periodsStats={report.periodsStats}
           />
         }
         transactions={
