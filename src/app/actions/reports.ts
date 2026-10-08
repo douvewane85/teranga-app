@@ -173,10 +173,12 @@ export async function getCampaignReport(campaignId: string) {
 
     globalTotalSurplus += memberTotalSurplus;
     
-    const nbreMoisVerses = target > 0 ? Math.floor(actualPaid / target) : 0;
+    const actualPaidWithoutSurplus = actualPaid - memberTotalSurplus;
+    
+    const nbreMoisVerses = target > 0 ? Math.floor(actualPaidWithoutSurplus / target) : 0;
     
     let expectedTotal = target * elapsedPeriodsCount;
-    let totalRetard = expectedTotal - actualPaid;
+    let totalRetard = expectedTotal - actualPaidWithoutSurplus;
     if (totalRetard < 0) totalRetard = 0;
     
     const nbreMoisRetard = target > 0 ? Math.ceil(totalRetard / target) : 0;
@@ -271,12 +273,12 @@ export async function getCampaignReport(campaignId: string) {
     },
     finances: {
       totalTargetAmount: globalTargetAmount,
-      totalPaidAmount: globalPaidAmount,
-      remainingAmount,
+      totalPaidAmount: globalPaidAmount - globalTotalSurplus,
+      remainingAmount: Math.max(0, globalTargetAmount - (globalPaidAmount - globalTotalSurplus)),
       paidCount,
       partialCount,
       unpaidCount,
-      recoveryRate,
+      recoveryRate: globalTargetAmount > 0 ? ((globalPaidAmount - globalTotalSurplus) / globalTargetAmount) * 100 : 0,
       globalTotalSurplus,
     },
     currentPeriodStats: {
