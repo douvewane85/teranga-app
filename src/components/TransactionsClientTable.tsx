@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/Badge";
+import { updatePaymentAmount, deletePayment } from "@/app/actions/payments";
 
 export default function TransactionsClientTable({ payments, campaignPeriods }: { payments: any[], campaignPeriods: string[] }) {
   const [filterMonth, setFilterMonth] = useState("");
@@ -32,6 +33,28 @@ export default function TransactionsClientTable({ payments, campaignPeriods }: {
       return matchMonth && matchMember && matchType && matchDate;
     });
   }, [payments, filterMonth, filterMember, filterType, filterStartDate, filterEndDate]);
+
+  const handleEditAmount = async (paymentId: string, currentAmount: number) => {
+    const newAmountStr = window.prompt("Entrez le nouveau montant en CFA :", currentAmount.toString());
+    if (newAmountStr) {
+      const newAmount = parseFloat(newAmountStr);
+      if (!isNaN(newAmount) && newAmount > 0) {
+        if (window.confirm(`Êtes-vous sûr de vouloir modifier le montant à ${newAmount} CFA ? Le surplus sera recalculé automatiquement.`)) {
+          await updatePaymentAmount(paymentId, newAmount);
+          window.location.reload();
+        }
+      } else {
+        alert("Montant invalide.");
+      }
+    }
+  };
+
+  const handleDelete = async (paymentId: string) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer définitivement ce paiement ?")) {
+      await deletePayment(paymentId);
+      window.location.reload();
+    }
+  };
 
   return (
     <div className="bg-white shadow-sm rounded-lg border border-gray-100 mt-6">
@@ -109,6 +132,7 @@ export default function TransactionsClientTable({ payments, campaignPeriods }: {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mode</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -139,10 +163,18 @@ export default function TransactionsClientTable({ payments, campaignPeriods }: {
                     {payment.status}
                   </Badge>
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button onClick={() => handleEditAmount(payment.id, payment.amount)} className="text-primary hover:text-primary-hover mr-3">
+                    Modifier
+                  </button>
+                  <button onClick={() => handleDelete(payment.id)} className="text-red-600 hover:text-red-900">
+                    Supprimer
+                  </button>
+                </td>
               </tr>
             ))}
             {filteredPayments.length === 0 && (
-              <tr><td colSpan={7} className="px-6 py-8 text-center text-sm text-gray-500">Aucun paiement trouvé avec ces filtres.</td></tr>
+              <tr><td colSpan={8} className="px-6 py-8 text-center text-sm text-gray-500">Aucun paiement trouvé avec ces filtres.</td></tr>
             )}
           </tbody>
         </table>

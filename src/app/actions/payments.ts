@@ -45,6 +45,16 @@ export async function recordManualPayment(formData: FormData) {
     // WE HAVE CHANGED THIS: We now allow overpayments (surplus) for a period.
     // The previous validation blocking payments if totalPaidForPeriod >= target has been removed.
 
+    // Règle: Un seul enregistrement de paiement par période
+    if (period) {
+      const existingPayment = await prisma.payment.findFirst({
+        where: { obligationId, period }
+      });
+      if (existingPayment) {
+        return { success: false, error: "Un paiement a déjà été enregistré pour cette période." };
+      }
+    }
+
     // 3. Upload de fichier local (si fourni)
     let proofUrl = null;
     if (file && file.size > 0) {
@@ -148,6 +158,69 @@ export async function rejectPayment(paymentId: string) {
       where: { id: paymentId },
       data: {
         status: "REJECTED",
+      }
+    });
+
+    revalidatePath("/admin/finances/campaigns/[id]", "page");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updatePaymentAmount(paymentId: string, newAmount: number) {
+  try {
+    const payment = await prisma.payment.findUnique({
+      where: { id: paymentId },
+    });
+    if (!payment) throw new Error("Paiement introuvable.");
+
+    await prisma.$transaction(async (tx) => {
+      await tx.payment.update({
+        where: { id: paymentId },
+        data: { amount: newAmount }
+      });
+
+      if (payment.status === "COMPLETED") {
+        const allCompleted = await tx.payment.findMany({
+          where: { obligationId: payment.obligationId, status: "COMPLETED" }
+        });
+        const newTotalPaid = allCompleted.reduce((sum, p) => sum + p.amount, 0);
+        await tx.obligation.update({
+          where: { id: payment.obligationId },
+          data: { amountPaid: newTotalPaid }
+        });
+      }
+    });
+
+    revalidatePath("/admin/finances/campaigns/[id]", "page");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deletePayment(paymentId: string) {
+  try {
+    const payment = await prisma.payment.findUnique({
+      where: { id: paymentId },
+    });
+    if (!payment) throw new Error("Paiement introuvable.");
+
+    await prisma.$transaction(async (tx) => {
+      await tx.payment.delete({
+        where: { id: paymentId },
+      });
+
+      if (payment.status === "COMPLETED") {
+        const allCompleted = await tx.payment.findMany({
+          where: { obligationId: payment.obligationId, status: "COMPLETED" }
+        });
+        const newTotalPaid = allCompleted.reduce((sum, p) => sum + p.amount, 0);
+        await tx.obligation.update({
+          where: { id: payment.obligationId },
+          data: { amountPaid: newTotalPaid }
+        });
       }
     });
 

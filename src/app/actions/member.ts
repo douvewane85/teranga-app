@@ -190,6 +190,16 @@ export async function declarePayment(formData: FormData) {
       return { success: false, error: "Obligation introuvable." };
     }
 
+    // Règle: Un seul enregistrement de paiement par période
+    if (period) {
+      const existingPayment = await prisma.payment.findFirst({
+        where: { obligationId, period }
+      });
+      if (existingPayment) {
+        return { success: false, error: "Un paiement a déjà été enregistré pour cette période." };
+      }
+    }
+
     // Upload
     let proofUrl = null;
     if (file && file.size > 0) {
