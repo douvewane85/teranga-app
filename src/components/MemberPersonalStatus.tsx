@@ -32,8 +32,8 @@ export default function MemberPersonalStatus({
         </div>
         
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-          <span className="text-sm font-medium text-gray-500 mb-1">Déjà versé</span>
-          <span className="text-3xl font-bold text-success">{statistics.totalPaidAmount.toLocaleString('fr-FR')} CFA</span>
+          <span className="text-sm font-medium text-gray-500 mb-1">Déjà versé (Cotisations)</span>
+          <span className="text-3xl font-bold text-success">{(statistics.totalPaidAmount - (statistics.totalSurplus || 0)).toLocaleString('fr-FR')} CFA</span>
           <span className="text-xs text-gray-500 mt-2">{statistics.nbreMoisVerses} période(s) payée(s)</span>
         </div>
 

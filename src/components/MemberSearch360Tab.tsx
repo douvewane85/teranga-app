@@ -88,8 +88,8 @@ export default function MemberSearch360Tab({
         {/* Mon statut personnel version admin */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
-            <span className="text-sm font-medium text-gray-500 mb-1">Déjà versé</span>
-            <span className="text-3xl font-bold text-success">{statistics.totalPaidAmount.toLocaleString('fr-FR')} CFA</span>
+            <span className="text-sm font-medium text-gray-500 mb-1">Déjà versé (Cotisations)</span>
+            <span className="text-3xl font-bold text-success">{(statistics.totalPaidAmount - (selectedMember.totalSurplus || 0)).toLocaleString('fr-FR')} CFA</span>
             <span className="text-xs text-gray-500 mt-2">{statistics.nbreMoisVerses} période(s) payée(s)</span>
           </div>
 
