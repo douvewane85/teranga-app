@@ -128,9 +128,27 @@ export default function EditPaymentModal({
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Période du paiement</label>
-            <input type="text" readOnly value={payment.period || "Unique"} className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-500" />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Membre</label>
+              <input type="text" readOnly value={payment.obligation?.user?.name || payment.obligation?.user?.email || "N/A"} className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Date du paiement</label>
+              <input type="text" readOnly value={new Date(payment.createdAt).toLocaleDateString('fr-FR')} className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Mois (Période)</label>
+              <input type="text" readOnly value={payment.period || "Unique"} className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Type de base</label>
+              <input type="text" readOnly value={payment.paymentType || "Cotisation"} className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Mode</label>
+              <input type="text" readOnly value={payment.method} className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-500" />
+            </div>
           </div>
 
           <div>
