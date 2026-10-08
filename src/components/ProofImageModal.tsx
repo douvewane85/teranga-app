@@ -29,12 +29,20 @@ export default function ProofImageModal({ url }: { url: string }) {
                 </svg>
               </button>
             </div>
-            <div className="overflow-auto p-4 flex justify-center bg-gray-100 flex-grow">
-              <img 
-                src={url} 
-                alt="Preuve de paiement" 
-                className="max-w-full h-auto object-contain shadow-sm border border-gray-200 bg-white" 
-              />
+            <div className="overflow-auto p-4 flex justify-center bg-gray-100 flex-grow min-h-[300px]">
+              {url.toLowerCase().endsWith('.pdf') ? (
+                <iframe 
+                  src={url} 
+                  className="w-full h-[70vh] border-0" 
+                  title="Preuve de paiement (PDF)"
+                />
+              ) : (
+                <img 
+                  src={url} 
+                  alt="Preuve de paiement" 
+                  className="max-w-full h-auto object-contain shadow-sm border border-gray-200 bg-white" 
+                />
+              )}
             </div>
             <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 flex justify-end">
                <button 

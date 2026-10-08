@@ -206,6 +206,7 @@ export async function declarePayment(formData: FormData) {
       const buffer = Buffer.from(await file.arrayBuffer());
       const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
       const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await fs.mkdir(uploadDir, { recursive: true }).catch(() => {});
       const filePath = path.join(uploadDir, fileName);
       
       await fs.writeFile(filePath, buffer);
