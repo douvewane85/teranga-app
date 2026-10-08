@@ -245,7 +245,7 @@ export async function convertSurplusToContribution(paymentId: string, targetPeri
     if (!obligation) throw new Error("Obligation introuvable.");
 
     // Just basic validation
-    if (payment.amount < obligation.targetAmount * 2) {
+    if (payment.amount < (obligation.targetAmount || 0) * 2) {
       // Actually the surplus is amount - targetAmount >= targetAmount => amount >= 2 * targetAmount
       // This is mostly checked on the frontend
     }
