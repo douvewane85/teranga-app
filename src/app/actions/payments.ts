@@ -253,11 +253,18 @@ export async function convertSurplusToContribution(paymentId: string, targetPeri
     const requiredSurplus = targetAmount; 
     
     await prisma.$transaction(async (tx) => {
-      // 1. Réduire le montant du paiement d'origine
-      await tx.payment.update({
-        where: { id: paymentId },
-        data: { amount: payment.amount - requiredSurplus }
-      });
+      // 1. Gérer le paiement d'origine (le réduire ou le supprimer s'il tombe à 0)
+      const remainingAmount = payment.amount - requiredSurplus;
+      if (remainingAmount <= 0) {
+        await tx.payment.delete({
+          where: { id: paymentId }
+        });
+      } else {
+        await tx.payment.update({
+          where: { id: paymentId },
+          data: { amount: remainingAmount }
+        });
+      }
 
       // 2. Créer un nouveau paiement pour la période de destination
       await tx.payment.create({

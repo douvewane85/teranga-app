@@ -16,6 +16,7 @@ export default function TransactionsClientTable({ payments, campaignPeriods }: {
 
   const filteredPayments = useMemo(() => {
     return payments.filter((p) => {
+      if (p.amount <= 0) return false;
       const matchMonth = filterMonth ? p.period === filterMonth : true;
       const memberName = p.obligation?.user?.name || p.obligation?.user?.email || "";
       const matchMember = filterMember ? memberName.toLowerCase().includes(filterMember.toLowerCase()) : true;
