@@ -101,8 +101,7 @@ export async function getCampaignReport(campaignId: string) {
     } else {
       partialCount++;
     }
-
-  // Période en cours est calculée plus bas dans periodsStats
+  });
 
   // 5. Détail et répartition des paiements
   const allPayments = await prisma.payment.findMany({
