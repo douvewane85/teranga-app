@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/Badge";
-import { updatePaymentAmount, deletePayment } from "@/app/actions/payments";
+import { deletePayment } from "@/app/actions/payments";
+import EditPaymentModal from "@/components/EditPaymentModal";
 
 export default function TransactionsClientTable({ payments, campaignPeriods }: { payments: any[], campaignPeriods: string[] }) {
   const [filterMonth, setFilterMonth] = useState("");
@@ -10,6 +11,8 @@ export default function TransactionsClientTable({ payments, campaignPeriods }: {
   const [filterType, setFilterType] = useState("");
   const [filterStartDate, setFilterStartDate] = useState("");
   const [filterEndDate, setFilterEndDate] = useState("");
+
+  const [paymentToEdit, setPaymentToEdit] = useState<any | null>(null);
 
   const filteredPayments = useMemo(() => {
     return payments.filter((p) => {
@@ -34,19 +37,8 @@ export default function TransactionsClientTable({ payments, campaignPeriods }: {
     });
   }, [payments, filterMonth, filterMember, filterType, filterStartDate, filterEndDate]);
 
-  const handleEditAmount = async (paymentId: string, currentAmount: number) => {
-    const newAmountStr = window.prompt("Entrez le nouveau montant en CFA :", currentAmount.toString());
-    if (newAmountStr) {
-      const newAmount = parseFloat(newAmountStr);
-      if (!isNaN(newAmount) && newAmount > 0) {
-        if (window.confirm(`Êtes-vous sûr de vouloir modifier le montant à ${newAmount} CFA ? Le surplus sera recalculé automatiquement.`)) {
-          await updatePaymentAmount(paymentId, newAmount);
-          window.location.reload();
-        }
-      } else {
-        alert("Montant invalide.");
-      }
-    }
+  const handleEditAmount = (payment: any) => {
+    setPaymentToEdit(payment);
   };
 
   const handleDelete = async (paymentId: string) => {
@@ -57,6 +49,7 @@ export default function TransactionsClientTable({ payments, campaignPeriods }: {
   };
 
   return (
+    <>
     <div className="bg-white shadow-sm rounded-lg border border-gray-100 mt-6">
       <div className="px-6 py-5 border-b border-gray-200 flex flex-col space-y-4">
         <h3 className="text-lg font-medium leading-6 text-gray-900">Historique détaillé des paiements</h3>
@@ -164,7 +157,7 @@ export default function TransactionsClientTable({ payments, campaignPeriods }: {
                   </Badge>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button onClick={() => handleEditAmount(payment.id, payment.amount)} className="text-primary hover:text-primary-hover mr-3">
+                  <button onClick={() => handleEditAmount(payment)} className="text-primary hover:text-primary-hover mr-3">
                     Modifier
                   </button>
                   <button onClick={() => handleDelete(payment.id)} className="text-red-600 hover:text-red-900">
@@ -180,5 +173,14 @@ export default function TransactionsClientTable({ payments, campaignPeriods }: {
         </table>
       </div>
     </div>
+    
+    <EditPaymentModal 
+      isOpen={!!paymentToEdit} 
+      onClose={() => setPaymentToEdit(null)} 
+      payment={paymentToEdit} 
+      campaignPeriods={campaignPeriods}
+      allPayments={payments} 
+    />
+    </>
   );
 }

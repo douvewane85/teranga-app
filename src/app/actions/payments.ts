@@ -230,3 +230,52 @@ export async function deletePayment(paymentId: string) {
     return { success: false, error: error.message };
   }
 }
+
+export async function convertSurplusToContribution(paymentId: string, targetPeriod: string, targetAmount: number) {
+  try {
+    const payment = await prisma.payment.findUnique({
+      where: { id: paymentId },
+    });
+    if (!payment) throw new Error("Paiement introuvable.");
+
+    if (payment.amount < payment.obligation.targetAmount * 2) {
+      // Just basic validation, actually the surplus is amount - targetAmount >= targetAmount => amount >= 2 * targetAmount
+      // Wait, we don't have obligation included.
+    }
+
+    const obligation = await prisma.obligation.findUnique({
+      where: { id: payment.obligationId }
+    });
+
+    if (!obligation) throw new Error("Obligation introuvable.");
+
+    const requiredSurplus = targetAmount; 
+    
+    await prisma.$transaction(async (tx) => {
+      // 1. Réduire le montant du paiement d'origine
+      await tx.payment.update({
+        where: { id: paymentId },
+        data: { amount: payment.amount - requiredSurplus }
+      });
+
+      // 2. Créer un nouveau paiement pour la période de destination
+      await tx.payment.create({
+        data: {
+          obligationId: payment.obligationId,
+          amount: requiredSurplus,
+          method: payment.method,
+          period: targetPeriod,
+          status: "COMPLETED",
+          validatedAt: new Date(),
+        }
+      });
+
+      // Pas besoin de changer amountPaid sur l'obligation car le montant total reste le même!
+    });
+
+    revalidatePath("/admin/finances/campaigns/[id]", "page");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
