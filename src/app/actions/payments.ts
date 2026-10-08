@@ -238,16 +238,17 @@ export async function convertSurplusToContribution(paymentId: string, targetPeri
     });
     if (!payment) throw new Error("Paiement introuvable.");
 
-    if (payment.amount < payment.obligation.targetAmount * 2) {
-      // Just basic validation, actually the surplus is amount - targetAmount >= targetAmount => amount >= 2 * targetAmount
-      // Wait, we don't have obligation included.
-    }
-
     const obligation = await prisma.obligation.findUnique({
       where: { id: payment.obligationId }
     });
 
     if (!obligation) throw new Error("Obligation introuvable.");
+
+    // Just basic validation
+    if (payment.amount < obligation.targetAmount * 2) {
+      // Actually the surplus is amount - targetAmount >= targetAmount => amount >= 2 * targetAmount
+      // This is mostly checked on the frontend
+    }
 
     const requiredSurplus = targetAmount; 
     
