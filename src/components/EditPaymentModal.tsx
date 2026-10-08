@@ -38,7 +38,15 @@ export default function EditPaymentModal({
   }, [payment]);
 
   const targetAmount = payment?.obligation?.targetAmount || 0;
-  const surplus = amount > targetAmount ? amount - targetAmount : 0;
+  
+  const paymentType = payment?.paymentType || "Cotisation";
+  let surplus = 0;
+  if (paymentType === "Surplus") {
+    surplus = amount;
+  } else if (paymentType === "Cotisation + Surplus" || amount > targetAmount) {
+    surplus = amount > targetAmount ? amount - targetAmount : 0;
+  }
+
   const hasSurplus = surplus > 0;
 
   // Calcul des périodes éligibles
