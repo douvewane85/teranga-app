@@ -76,8 +76,7 @@ export async function getCampaignReport(campaignId: string) {
   let globalTargetAmount = 0;
   let globalPaidAmount = 0;
   
-  let currentPeriodTargetAmount = 0;
-  let currentPeriodPaidAmount = 0;
+  // Variables supprimées, on utilise periodsStats
 
   let paidCount = 0;
   let partialCount = 0;
@@ -103,18 +102,7 @@ export async function getCampaignReport(campaignId: string) {
       partialCount++;
     }
 
-    // Période en cours
-    currentPeriodTargetAmount += target;
-    const hasPaidCurrentPeriod = obl.payments.some(p => p.status === "COMPLETED" && p.period === currentPeriod.name);
-    if (hasPaidCurrentPeriod) {
-      // Pour simplifier, on suppose que s'il a payé la période, il a payé "target"
-      currentPeriodPaidAmount += target; 
-    }
-  });
-
-  const remainingAmount = Math.max(0, globalTargetAmount - globalPaidAmount);
-  const recoveryRate = globalTargetAmount > 0 ? (globalPaidAmount / globalTargetAmount) * 100 : 0;
-  const currentPeriodRecoveryRate = currentPeriodTargetAmount > 0 ? (currentPeriodPaidAmount / currentPeriodTargetAmount) * 100 : 0;
+  // Période en cours est calculée plus bas dans periodsStats
 
   // 5. Détail et répartition des paiements
   const allPayments = await prisma.payment.findMany({
@@ -267,6 +255,8 @@ export async function getCampaignReport(campaignId: string) {
     };
   });
 
+  const currentPeriodExactStat = periodsStats[elapsedPeriodsCount - 1] || periodsStats[periodsStats.length - 1];
+
   return {
     campaign,
     statistics: {
@@ -286,10 +276,11 @@ export async function getCampaignReport(campaignId: string) {
       globalTotalSurplus,
     },
     currentPeriodStats: {
-      name: currentPeriod.name,
-      targetAmount: currentPeriodTargetAmount,
-      paidAmount: currentPeriodPaidAmount,
-      recoveryRate: currentPeriodRecoveryRate,
+      name: currentPeriodExactStat.period,
+      targetAmount: currentPeriodExactStat.targetAmount,
+      paidAmount: currentPeriodExactStat.paidAmount,
+      surplusAmount: currentPeriodExactStat.surplusAmount,
+      recoveryRate: currentPeriodExactStat.targetAmount > 0 ? (currentPeriodExactStat.paidAmount / currentPeriodExactStat.targetAmount) * 100 : 0,
     },
     payments: {
       distribution: paymentDistribution,

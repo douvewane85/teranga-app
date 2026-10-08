@@ -13,6 +13,7 @@ type MemberData = {
   nbreMoisVerses: number;
   nbreMoisRetard: number;
   paidPeriods: string[];
+  totalSurplus: number;
 };
 
 import { generatePeriods } from "@/lib/periods";
@@ -34,12 +35,14 @@ export default function MembersTableWithPaymentModal({
     name: string;
     targetAmount: number;
     paidAmount: number;
+    surplusAmount?: number;
     recoveryRate: number;
   };
 }) {
   const [selectedMember, setSelectedMember] = useState<MemberData | null>(null);
   const [initialSelectedPeriod, setInitialSelectedPeriod] = useState<string | undefined>(undefined);
   const [selected360Member, setSelected360Member] = useState<MemberData | null>(null);
+  const [activeTab, setActiveTab] = useState<"cotisations" | "surplus">("cotisations");
 
   const periods = generatePeriods(campaignStartDate, campaignFrequency);
   const today = new Date();
@@ -61,6 +64,12 @@ export default function MembersTableWithPaymentModal({
             <p className="text-sm text-gray-500 mb-1">Montant perçu</p>
             <p className="text-lg font-semibold text-success">{currentPeriodStats.paidAmount.toLocaleString('fr-FR')} CFA</p>
           </div>
+          {currentPeriodStats.surplusAmount !== undefined && (
+            <div>
+              <p className="text-sm text-gray-500 mb-1">Montant Surplus</p>
+              <p className="text-lg font-semibold text-indigo-600">+{currentPeriodStats.surplusAmount.toLocaleString('fr-FR')} CFA</p>
+            </div>
+          )}
           <div>
             <p className="text-sm text-gray-500 mb-1">Recouvrement</p>
             <p className="text-lg font-semibold text-primary">{currentPeriodStats.recoveryRate.toFixed(1)}%</p>
@@ -69,10 +78,27 @@ export default function MembersTableWithPaymentModal({
       </div>
 
       <div className="bg-white shadow-sm rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Membres de la campagne ({members.length})</h3>
+        <div className="border-b border-gray-200">
+          <div className="px-6 py-3">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">Membres de la campagne ({members.length})</h3>
+          </div>
+          <div className="flex px-6 space-x-8">
+            <button
+              onClick={() => setActiveTab("cotisations")}
+              className={`py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === "cotisations" ? "border-primary text-primary" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}`}
+            >
+              Cotisation Membres de la campagne
+            </button>
+            <button
+              onClick={() => setActiveTab("surplus")}
+              className={`py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === "surplus" ? "border-indigo-600 text-indigo-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}`}
+            >
+              Surplus Membres de la campagne
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto overflow-y-auto max-h-[600px]">
+          {activeTab === "cotisations" && (
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
@@ -100,7 +126,7 @@ export default function MembersTableWithPaymentModal({
                 <tr key={member.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{member.user.name || member.user.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.targetAmount.toLocaleString('fr-FR')}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{member.amountPaid.toLocaleString('fr-FR')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(member.amountPaid - (member.totalSurplus || 0)).toLocaleString('fr-FR')}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-danger">{member.totalRetard > 0 ? member.totalRetard.toLocaleString('fr-FR') : "-"}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-900">{member.nbreMoisVerses}</td>
                   <td className="px-6 py-4 text-sm text-gray-500 text-center">
@@ -144,6 +170,39 @@ export default function MembersTableWithPaymentModal({
               )}
             </tbody>
           </table>
+          )}
+          
+          {activeTab === "surplus" && (
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membre</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Surplus</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {members.filter(m => m.totalSurplus > 0).map((member) => (
+                  <tr key={`surplus-${member.id}`} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{member.user.name || member.user.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-indigo-600">+{member.totalSurplus.toLocaleString('fr-FR')} CFA</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button 
+                        onClick={() => setSelected360Member(member)}
+                        className="text-xs px-2 py-1 rounded border bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 transition-colors flex items-center w-fit"
+                      >
+                        <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        Vue 360°
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {members.filter(m => m.totalSurplus > 0).length === 0 && (
+                  <tr><td colSpan={3} className="px-6 py-8 text-center text-sm text-gray-500">Aucun surplus enregistré par les membres.</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
