@@ -245,3 +245,20 @@ export async function enrollMembersToCampaign(formData: FormData) {
 
   revalidatePath(`/admin/finances/campaigns/${campaignId}`);
 }
+
+export async function archiveCampaign(campaignId: string) {
+  await prisma.campaign.update({
+    where: { id: campaignId },
+    data: { isArchived: true },
+  });
+  revalidatePath("/admin/finances/campaigns");
+}
+
+export async function togglePinCampaign(campaignId: string, currentPinStatus: boolean) {
+  await prisma.campaign.update({
+    where: { id: campaignId },
+    data: { isPinned: !currentPinStatus },
+  });
+  revalidatePath("/admin/finances/campaigns");
+  revalidatePath("/admin/reports");
+}

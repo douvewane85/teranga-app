@@ -73,6 +73,48 @@ export default function ReportsPage() {
         </div>
       </div>
 
+      {/* Campagnes épinglées */}
+      {data?.pinnedCampaigns && data.pinnedCampaigns.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-gray-900">Campagnes Épinglées (Vue Rapide)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {data.pinnedCampaigns.map((c: any) => (
+              <div key={c.id} className="bg-white rounded-xl shadow-sm border border-yellow-200 p-6 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-yellow-400"></div>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-bold text-gray-900">{c.name}</h3>
+                  <span className="text-yellow-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                      <path d="M12 17v5" />
+                      <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+                    </svg>
+                  </span>
+                </div>
+                <div className="mt-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Montant Collecté</span>
+                    <span className="font-bold text-primary">{c.totalPaidAmount.toLocaleString("fr-FR")} CFA</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Objectif (Attendu)</span>
+                    <span className="font-medium text-gray-900">{c.totalTargetAmount.toLocaleString("fr-FR")} CFA</span>
+                  </div>
+                  <div className="mt-3">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-gray-500">Taux de recouvrement</span>
+                      <span className="font-bold">{c.recoveryRate.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2">
+                      <div className="bg-primary h-2 rounded-full" style={{ width: `${Math.min(100, c.recoveryRate)}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Bar Chart */}

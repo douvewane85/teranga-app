@@ -301,7 +301,9 @@ export async function getCampaignReport(campaignId: string) {
 export async function getGlobalReport() {
   const totalMembers = await prisma.user.count({ where: { role: "MEMBER", status: "ACTIVE" } });
   
-  const allCampaigns = await prisma.campaign.findMany();
+  const allCampaigns = await prisma.campaign.findMany({
+    where: { isArchived: false }
+  });
   
   const allPayments = await prisma.payment.findMany({
     where: { status: "COMPLETED" },
@@ -335,13 +337,26 @@ export async function getGlobalReport() {
     value: paymentDistribution[k]
   }));
 
+  const pinnedCampaignsRaw = allCampaigns.filter(c => c.isPinned);
+  const pinnedCampaigns = await Promise.all(pinnedCampaignsRaw.map(async (c) => {
+    const report = await getCampaignReport(c.id);
+    return {
+      id: c.id,
+      name: c.name,
+      totalTargetAmount: report.finances.totalTargetAmount,
+      totalPaidAmount: report.finances.totalPaidAmount,
+      recoveryRate: report.finances.recoveryRate,
+    };
+  }));
+
   return {
     totalMembers,
     totalCampaigns: allCampaigns.length,
     globalPaidAmount,
     monthlyCollections,
     methodDistribution,
-    allCampaigns: allCampaigns.map(c => ({ id: c.id, name: c.name, status: c.endDate > new Date() ? 'En cours' : 'Terminée' }))
+    allCampaigns: allCampaigns.map(c => ({ id: c.id, name: c.name, status: c.endDate > new Date() ? 'En cours' : 'Terminée' })),
+    pinnedCampaigns
   };
 }
 

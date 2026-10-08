@@ -1,11 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import { Badge } from "@/components/ui/Badge";
 import Link from "next/link";
+import { archiveCampaign, togglePinCampaign } from "@/app/actions/campaigns";
 
 const prisma = new PrismaClient();
 
 export default async function CampaignsPage() {
   const campaigns = await prisma.campaign.findMany({
+    where: { isArchived: false },
     orderBy: { createdAt: "desc" },
     include: {
       _count: {
@@ -58,7 +60,7 @@ export default async function CampaignsPage() {
                     <h3 className="text-xl font-bold text-gray-900 line-clamp-1 group-hover:text-primary transition-colors">
                       {campaign.name}
                     </h3>
-                    <div className="ml-3 flex-shrink-0">
+                    <div className="ml-3 flex-shrink-0 flex items-center gap-2">
                       {isOverdue ? (
                         <Badge variant="danger">Expirée</Badge>
                       ) : isActive ? (
@@ -66,6 +68,23 @@ export default async function CampaignsPage() {
                       ) : (
                         <Badge variant="warning">À venir</Badge>
                       )}
+                      
+                      {/* Form for Pin Toggle */}
+                      <form action={async () => {
+                        "use server";
+                        await togglePinCampaign(campaign.id, campaign.isPinned);
+                      }}>
+                        <button 
+                          type="submit" 
+                          className={`p-1 rounded-full transition-colors ${campaign.isPinned ? 'text-yellow-500 hover:text-yellow-600 bg-yellow-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                          title={campaign.isPinned ? "Désépingler" : "Épingler pour le rapport"}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={campaign.isPinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                            <path d="M12 17v5" />
+                            <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+                          </svg>
+                        </button>
+                      </form>
                     </div>
                   </div>
 
@@ -121,6 +140,25 @@ export default async function CampaignsPage() {
                       </svg>
                       Rapport
                     </Link>
+                    <form action={async () => {
+                      "use server";
+                      await archiveCampaign(campaign.id);
+                    }}>
+                      <button
+                        type="submit"
+                        className="flex-shrink-0 inline-flex justify-center items-center p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                        title="Archiver (Soft delete)"
+                        onClick={(e) => {
+                          if (!confirm("Voulez-vous vraiment archiver cette campagne ? Elle n'apparaîtra plus dans cette liste.")) {
+                            e.preventDefault();
+                          }
+                        }}
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </form>
                   </div>
                 </div>
               </div>

@@ -57,6 +57,8 @@ model Campaign {
   goalAmount  Float?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+  isArchived  Boolean          @default(false)
+  isPinned    Boolean          @default(false)
   tiers       CampaignTier[]
   obligations Obligation[]
 }
