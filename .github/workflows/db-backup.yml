@@ -6,9 +6,12 @@ on:
     - cron: '0 0 * * 0'
   workflow_dispatch: # Permet de déclencher la sauvegarde manuellement depuis GitHub
 
+permissions:
+  contents: write # Nécessaire pour créer la release GitHub et y attacher le backup
+
 jobs:
   backup:
-    name: Backup to Google Drive
+    name: Backup PostgreSQL Database
     runs-on: ubuntu-latest
 
     steps:
@@ -22,26 +25,14 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Prepare credentials
-        id: creds
-        run: |
-          # Encode les credentials en base64 si ils ont été fournis en JSON brut
-          ENCODED=$(echo -n '${{ secrets.GDRIVE_CREDENTIALS_DATA }}' | base64 -w 0)
-          echo "::add-mask::$ENCODED"
-          echo "GDRIVE_BASE64=$ENCODED" >> $GITHUB_ENV
-
-      - name: Upload to Google Drive
-        uses: adityak74/google-drive-upload-git-action@main
+      - name: Create GitHub Release with Backup
+        uses: softprops/action-gh-release@v2
         with:
-          credentials: ${{ env.GDRIVE_BASE64 }}
-          filename: backup_${{ env.TIMESTAMP }}.sql.gz
-          folderId: ${{ secrets.GDRIVE_FOLDER_ID }}
-          name: backup_${{ env.TIMESTAMP }}.sql.gz
-          overwrite: "false"
-
-      - name: Upload backup artifact (GitHub fallback)
-        uses: actions/upload-artifact@v4
-        with:
-          name: teranga-db-backup-${{ env.TIMESTAMP }}
-          path: backup_${{ env.TIMESTAMP }}.sql.gz
-          retention-days: 90
+          tag_name: backup-${{ env.TIMESTAMP }}
+          name: "Database Backup - ${{ env.TIMESTAMP }}"
+          body: |
+            Sauvegarde automatique hebdomadaire de la base PostgreSQL (Neon).
+            Date : ${{ env.TIMESTAMP }}
+          files: backup_${{ env.TIMESTAMP }}.sql.gz
+          draft: false
+          prerelease: false
