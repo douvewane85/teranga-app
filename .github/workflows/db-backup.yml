@@ -1,0 +1,39 @@
+name: Scheduled Database Backup
+
+on:
+  schedule:
+    # Chaque dimanche à 00:00 UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch: # Permet de déclencher la sauvegarde manuellement depuis GitHub
+
+jobs:
+  backup:
+    name: Backup to Google Drive
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set timestamp
+        id: vars
+        run: echo "TIMESTAMP=$(date +'%Y-%m-%d_%H%M%S')" >> $GITHUB_ENV
+
+      - name: Dump PostgreSQL database
+        run: |
+          docker run --rm postgres:18 pg_dump "${{ secrets.DATABASE_URL }}" | gzip > backup_${{ env.TIMESTAMP }}.sql.gz
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Upload to Google Drive
+        uses: adityak74/google-drive-upload-git-action@main
+        with:
+          credentials: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
+          filename: backup_${{ env.TIMESTAMP }}.sql.gz
+          folderId: ${{ secrets.GDRIVE_FOLDER_ID }}
+          name: backup_${{ env.TIMESTAMP }}.sql.gz
+          overwrite: "false"
+
+      - name: Upload backup artifact (GitHub fallback)
+        uses: actions/upload-artifact@v4
+        with:
+          name: teranga-db-backup-${{ env.TIMESTAMP }}
+          path: backup_${{ env.TIMESTAMP }}.sql.gz
+          retention-days: 90
