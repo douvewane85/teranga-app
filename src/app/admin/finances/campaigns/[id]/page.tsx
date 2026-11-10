@@ -13,10 +13,13 @@ import CampaignSurplusCard from "@/components/CampaignSurplusCard";
 import CampaignPeriodsTable from "@/components/CampaignPeriodsTable";
 import { setUserDefaultCampaign } from "@/app/actions/preferences";
 import TransactionsClientTable from "@/components/TransactionsClientTable";
+import CampaignExpensesManager from "@/components/CampaignExpensesManager";
+import { getExpenseCategories } from "@/app/actions/expenses";
 
 export default async function CampaignReportPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const report = await getCampaignReport(params.id);
+  const categories = await getExpenseCategories();
   const { campaign, statistics, finances, currentPeriodStats, payments, allMembersData } = report;
 
   return (
@@ -130,6 +133,26 @@ export default async function CampaignReportPage(props: { params: Promise<{ id: 
                 <p className="mt-2 text-sm text-gray-500">Montant total des impayés</p>
               </div>
 
+              <div className="overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-100 px-4 py-5 sm:p-6">
+                <dt className="truncate text-sm font-medium text-gray-500">Dépenses Réglées</dt>
+                <dd className="mt-1 text-3xl font-semibold tracking-tight text-rose-600">
+                  {finances.totalExpenses.toLocaleString('fr-FR')} CFA
+                </dd>
+                <p className="mt-2 text-sm text-gray-500">{report.expenses.count} dépense(s) imputée(s)</p>
+              </div>
+
+              <div className={`overflow-hidden rounded-2xl shadow-sm border px-4 py-5 sm:p-6 ${
+                finances.netBalance >= 0 ? "bg-emerald-50/50 border-emerald-200" : "bg-rose-50/50 border-rose-200"
+              }`}>
+                <dt className="truncate text-sm font-medium text-gray-700">Solde Net Campagne</dt>
+                <dd className={`mt-1 text-3xl font-extrabold tracking-tight ${
+                  finances.netBalance >= 0 ? "text-emerald-700" : "text-rose-700"
+                }`}>
+                  {finances.netBalance.toLocaleString('fr-FR')} CFA
+                </dd>
+                <p className="mt-2 text-sm text-gray-600">Encaissé déduit des dépenses</p>
+              </div>
+
               <CampaignSurplusCard 
                 globalTotalSurplus={finances.globalTotalSurplus} 
                 members={allMembersData} 
@@ -221,6 +244,16 @@ export default async function CampaignReportPage(props: { params: Promise<{ id: 
               </table>
             </div>
           </div>
+        }
+        expensesCount={report.expenses.count}
+        expenses={
+          <CampaignExpensesManager
+            campaignId={campaign.id}
+            campaignName={campaign.name}
+            finances={finances}
+            expenses={report.expenses.all}
+            categories={categories}
+          />
         }
         members={
           <MembersTableWithPaymentModal 

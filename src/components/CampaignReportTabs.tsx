@@ -8,16 +8,20 @@ export default function CampaignReportTabs({
   members,
   transactions,
   memberSearch,
+  expenses,
   pendingValidationsCount = 0,
+  expensesCount = 0,
 }: {
   overview: React.ReactNode;
   validations: React.ReactNode;
   members: React.ReactNode;
   transactions: React.ReactNode;
   memberSearch: React.ReactNode;
+  expenses?: React.ReactNode;
   pendingValidationsCount?: number;
+  expensesCount?: number;
 }) {
-  const [activeTab, setActiveTab] = useState<"overview" | "validations" | "members" | "transactions" | "member_search">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "validations" | "members" | "transactions" | "member_search" | "expenses">("overview");
 
   return (
     <div className="space-y-6">
@@ -53,6 +57,26 @@ export default function CampaignReportTabs({
               </span>
             )}
           </button>
+
+          {expenses && (
+            <button
+              onClick={() => setActiveTab("expenses")}
+              className={`
+                whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium flex items-center
+                ${activeTab === "expenses"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                }
+              `}
+            >
+              Dépenses de la campagne
+              {expensesCount > 0 && (
+                <span className="ml-2 bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-xs font-semibold">
+                  {expensesCount}
+                </span>
+              )}
+            </button>
+          )}
 
           <button
             onClick={() => setActiveTab("members")}
@@ -98,6 +122,7 @@ export default function CampaignReportTabs({
       <div className="mt-4">
         {activeTab === "overview" && overview}
         {activeTab === "validations" && validations}
+        {activeTab === "expenses" && expenses}
         {activeTab === "members" && members}
         {activeTab === "transactions" && transactions}
         {activeTab === "member_search" && memberSearch}

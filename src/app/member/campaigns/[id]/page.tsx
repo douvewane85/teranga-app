@@ -10,6 +10,7 @@ import CampaignCharts from "@/components/CampaignCharts";
 import MemberCampaignTabs from "@/components/MemberCampaignTabs";
 import CampaignPeriodsTable from "@/components/CampaignPeriodsTable";
 import MemberPersonalStatus from "@/components/MemberPersonalStatus";
+import CampaignExpensesView from "@/components/CampaignExpensesView";
 
 export default async function MemberCampaignDetailPage(props: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -73,6 +74,14 @@ export default async function MemberCampaignDetailPage(props: { params: Promise<
             }
             globalPeriods={
               <CampaignPeriodsTable periodsStats={report.periodsStats} campaignName={campaign.name} />
+            }
+            transparency={
+              <CampaignExpensesView
+                campaignName={campaign.name}
+                finances={finances}
+                expenses={report.expenses.all}
+                expensesByCategory={report.expenses.byCategory}
+              />
             }
           />
         </div>

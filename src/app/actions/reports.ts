@@ -281,6 +281,34 @@ export async function getCampaignReport(campaignId: string) {
 
   const currentPeriodExactStat = periodsStats[elapsedPeriodsCount - 1] || periodsStats[periodsStats.length - 1];
 
+  // 7. Dépenses de la campagne
+  const campaignExpenses = await prisma.expense.findMany({
+    where: { campaignId },
+    include: {
+      category: true,
+      recordedBy: {
+        select: { id: true, name: true, email: true },
+      },
+    },
+    orderBy: { date: "desc" },
+  });
+
+  const totalExpenses = campaignExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const totalPaidAmount = globalPaidAmount - globalTotalSurplus;
+  const netBalance = totalPaidAmount - totalExpenses;
+
+  // Répartition des dépenses par catégorie
+  const expensesByCategory: Record<string, { count: number; total: number; color: string }> = {};
+  campaignExpenses.forEach((exp) => {
+    const catName = exp.category?.name || "Non catégorisé";
+    const color = exp.category?.color || "#2563EB";
+    if (!expensesByCategory[catName]) {
+      expensesByCategory[catName] = { count: 0, total: 0, color };
+    }
+    expensesByCategory[catName].count += 1;
+    expensesByCategory[catName].total += exp.amount;
+  });
+
   return {
     campaign,
     statistics: {
@@ -291,13 +319,22 @@ export async function getCampaignReport(campaignId: string) {
     },
     finances: {
       totalTargetAmount: globalTargetAmount,
-      totalPaidAmount: globalPaidAmount - globalTotalSurplus,
-      remainingAmount: Math.max(0, globalTargetAmount - (globalPaidAmount - globalTotalSurplus)),
+      totalPaidAmount,
+      remainingAmount: Math.max(0, globalTargetAmount - totalPaidAmount),
       paidCount,
       partialCount,
       unpaidCount,
-      recoveryRate: globalTargetAmount > 0 ? ((globalPaidAmount - globalTotalSurplus) / globalTargetAmount) * 100 : 0,
+      recoveryRate: globalTargetAmount > 0 ? (totalPaidAmount / globalTargetAmount) * 100 : 0,
       globalTotalSurplus,
+      totalExpenses,
+      netBalance,
+    },
+    expenses: {
+      all: campaignExpenses,
+      totalAmount: totalExpenses,
+      netBalance,
+      byCategory: expensesByCategory,
+      count: campaignExpenses.length,
     },
     currentPeriodStats: {
       name: currentPeriodExactStat.period,
@@ -370,10 +407,22 @@ export async function getGlobalReport() {
     };
   }));
 
+  // Global expenses
+  const allExpenses = await prisma.expense.findMany({
+    orderBy: { date: 'asc' }
+  });
+  let globalTotalExpenses = 0;
+  allExpenses.forEach(e => {
+    globalTotalExpenses += e.amount;
+  });
+  const globalNetBalance = globalPaidAmount - globalTotalExpenses;
+
   return {
     totalMembers,
     totalCampaigns: allCampaigns.length,
     globalPaidAmount,
+    globalTotalExpenses,
+    globalNetBalance,
     monthlyCollections,
     methodDistribution,
     allCampaigns: allCampaigns.map(c => ({ id: c.id, name: c.name, status: c.endDate > new Date() ? 'En cours' : 'Terminée' })),

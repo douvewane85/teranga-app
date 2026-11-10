@@ -58,18 +58,32 @@ export default function ReportsPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <p className="text-sm font-medium text-gray-500">Membres Actifs</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{data?.totalMembers || 0}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <p className="text-xs font-semibold text-gray-500 uppercase">Membres Actifs</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1">{data?.totalMembers || 0}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <p className="text-sm font-medium text-gray-500">Campagnes Actives</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{data?.totalCampaigns || 0}</p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <p className="text-xs font-semibold text-gray-500 uppercase">Campagnes</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1">{data?.totalCampaigns || 0}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <p className="text-sm font-medium text-gray-500">Montant Collecté Global</p>
-          <p className="text-3xl font-bold text-primary mt-2">{data?.globalPaidAmount?.toLocaleString("fr-FR")} FCFA</p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <p className="text-xs font-semibold text-gray-500 uppercase">Collecté Global</p>
+          <p className="text-2xl font-bold text-emerald-600 mt-1">{(data?.globalPaidAmount || 0)?.toLocaleString("fr-FR")} FCFA</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <p className="text-xs font-semibold text-gray-500 uppercase">Dépenses Globales</p>
+          <p className="text-2xl font-bold text-rose-600 mt-1">{(data?.globalTotalExpenses || 0)?.toLocaleString("fr-FR")} FCFA</p>
+        </div>
+        <div className={`rounded-xl shadow-sm border p-5 ${
+          (data?.globalNetBalance || 0) >= 0 ? "bg-emerald-50/50 border-emerald-200" : "bg-rose-50/50 border-rose-200"
+        }`}>
+          <p className="text-xs font-semibold text-gray-700 uppercase">Solde Net Global</p>
+          <p className={`text-2xl font-black mt-1 ${
+            (data?.globalNetBalance || 0) >= 0 ? "text-emerald-700" : "text-rose-700"
+          }`}>
+            {(data?.globalNetBalance || 0)?.toLocaleString("fr-FR")} FCFA
+          </p>
         </div>
       </div>
 

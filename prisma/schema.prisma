@@ -35,6 +35,7 @@ model User {
   updatedAt     DateTime       @updatedAt
   obligations   Obligation[]
   recordedPayments Payment[]   @relation("UserRecordedPayments")
+  recordedExpenses Expense[]   @relation("UserRecordedExpenses")
   sentCommunications     Communication[] @relation("SentCommunications")
   receivedCommunications CommunicationTarget[] @relation("ReceivedCommunications")
 }
@@ -61,6 +62,7 @@ model Campaign {
   isPinned    Boolean          @default(false)
   tiers       CampaignTier[]
   obligations Obligation[]
+  expenses    Expense[]
 }
 
 model CampaignTier {
@@ -164,3 +166,33 @@ model CommunicationTarget {
   status           String        @default("PENDING") // PENDING, SENT, FAILED, READ
   readAt           DateTime?
 }
+
+model ExpenseCategory {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  color       String?   @default("#2563EB")
+  expenses    Expense[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Expense {
+  id           String          @id @default(cuid())
+  campaignId   String
+  campaign     Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  categoryId   String
+  category     ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  title        String
+  description  String?
+  amount       Float
+  date         DateTime        @default(now())
+  beneficiary  String?
+  receiptUrl   String?
+  paymentMode  PaymentMethod   @default(CASH)
+  recordedById String?
+  recordedBy   User?           @relation("UserRecordedExpenses", fields: [recordedById], references: [id])
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
